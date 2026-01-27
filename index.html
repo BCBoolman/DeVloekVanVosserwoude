@@ -3,112 +3,64 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <style>
-        :root {
-            --gemini-blue: #4285f4;
-            --gemini-gradient: linear-gradient(70deg, #4285f4, #9b72cb, #d96570);
-            --bg-color: #f8f9fa;
-            --text-main: #1f1f1f;
-            --text-sub: #444746;
-        }
-
         body { 
-            margin: 0; padding: 0; font-family: 'Google Sans', Roboto, Arial, sans-serif; 
-            background-color: var(--bg-color);
-            height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-main);
+            margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; 
+            background: linear-gradient(135deg, #4285F4, #34A853);
+            height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white;
         }
-
-        /* De herkenbare Gemini "Star" of Logo */
-        .logo-container {
-            margin-bottom: 30px;
-            background: var(--gemini-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 60px;
-            font-weight: bold;
-        }
-
-        h1 { 
-            margin-bottom: 10px; font-size: 28px; font-weight: 500; 
-            letter-spacing: -0.5px;
-        }
-
-        p.subtitle {
-            color: var(--text-sub); margin-bottom: 40px; font-size: 16px;
-        }
+        .logo { width: 150px; height: 150px; margin-bottom: 20px; border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+        h1 { margin-bottom: 30px; font-size: 24px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
         
-        .menu-buttons { display: flex; flex-direction: column; gap: 12px; width: 85%; max-width: 320px; }
-        
+        .menu-buttons { display: flex; flex-direction: column; gap: 15px; width: 80%; max-width: 300px; }
         button { 
-            padding: 16px; border: none; border-radius: 28px; /* Extra ronde hoeken zoals Gemini */
-            font-weight: 500; font-size: 15px; cursor: pointer; 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 15px; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; 
+            cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
+        .btn-start { background: #white; color: #4285F4; }
+        .btn-uitleg { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; }
+        button:active { transform: scale(0.95); }
 
-        .btn-start { 
-            background: var(--gemini-gradient); color: white; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .btn-uitleg { 
-            background: white; color: var(--text-sub); 
-            border: 1px solid #dadce0;
-        }
-
-        button:hover { opacity: 0.9; transform: translateY(-1px); }
-
-        /* Scrolbare Modal */
+        /* Modal voor scrolbare uitleg */
         .modal { 
-            display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.4); 
+            display: none; position: fixed; z-index: 10; left: 0; top: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
         }
-
         .modal-content { 
-            background: white; color: var(--text-main); margin: 10vh auto; padding: 32px; 
-            border-radius: 24px; width: 85%; max-width: 450px; max-height: 75vh; 
-            overflow-y: auto; box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+            background: white; color: #333; margin: 10% auto; padding: 25px; border-radius: 20px; 
+            width: 80%; max-height: 70vh; overflow-y: auto; /* Zorgt voor de scrollbar */
         }
-
-        .modal-content h2 { margin-top: 0; font-size: 22px; color: var(--gemini-blue); }
-        
-        .modal-content li { margin-bottom: 12px; color: var(--text-sub); line-height: 1.5; }
-
-        .btn-sluit { 
-            background: #f1f3f4; color: var(--text-main); width: 100%; margin-top: 20px; 
-        }
+        .btn-sluit { background: #4285F4; color: white; width: 100%; margin-top: 15px; }
     </style>
 </head>
 <body>
 
-    <div class="logo-container">✦</div> 
-    <h1>GPS Avontuur</h1>
-    <p class="subtitle">Hoe kan ik je vandaag helpen spelen?</p>
+    <img src="jouw-logo.png" alt="Logo" class="logo"> <h1>Mijn GPS Avontuur</h1>
 
     <div class="menu-buttons">
-        <button class="btn-start" onclick="window.location.href='kaart.html'">Start het spel</button>
-        <button class="btn-uitleg" onclick="toggleModal(true)">Uitleg bekijken</button>
+        <button class="btn-start" onclick="window.location.href='kaart.html'">Start het Spel</button>
+        <button class="btn-uitleg" onclick="toggleModal(true)">Hoe werkt het?</button>
     </div>
 
     <div id="uitlegModal" class="modal">
         <div class="modal-content">
-            <h2>Hoe het werkt</h2>
-            <ul>
-                <li><strong>Verken de kaart:</strong> Navigeer naar de gemarkeerde locaties in de echte wereld.</li>
-                <li><strong>Check-in:</strong> Gebruik je GPS om te bevestigen dat je op de juiste plek bent.</li>
-                <li><strong>Voortgang:</strong> Je behaalde doelen worden automatisch onthouden.</li>
-                <li><strong>Privacy:</strong> We gebruiken je locatie alleen om het spel te spelen; je data blijft op dit apparaat.</li>
-            </ul>
-            <p>Veel succes met je zoektocht!</p>
-            <button class="btn-sluit" onclick="toggleModal(false)">Sluiten</button>
+            <h2>Speluitleg</h2>
+            <p>Welkom bij het spannendste GPS spel van de buurt! Volg deze stappen:</p>
+            <ol>
+                <li>Ga naar de kaartpagina.</li>
+                <li>Zet je GPS aan via de blauwe knop.</li>
+                <li>Loop naar de markers op de kaart.</li>
+                <li>Ben je binnen 25 meter? Dan kun je inchecken!</li>
+                <li>Je voortgang wordt automatisch opgeslagen op je telefoon.</li>
+                <li>Bezoek alle locaties om het spel te voltooien.</li>
+                <li>Let altijd op het verkeer en je omgeving!</li>
+            </ol>
+            <button class="btn-sluit" onclick="toggleModal(false)">Ik snap het!</button>
         </div>
     </div>
 
     <script>
         function toggleModal(show) {
             document.getElementById('uitlegModal').style.display = show ? 'block' : 'none';
-        }
-        // Sluit modal bij klik buiten de inhoud
-        window.onclick = function(event) {
-            if (event.target.className === 'modal') toggleModal(false);
         }
     </script>
 </body>
