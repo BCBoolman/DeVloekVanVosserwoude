@@ -4,63 +4,101 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <style>
         body { 
-            margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; 
-            background: linear-gradient(135deg, #4285F4, #34A853);
-            height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white;
+            margin: 0; padding: 0; font-family: 'Georgia', serif; 
+            /* Achtergrond met perkament textuur en zware vignette */
+            background: #222 url('https://www.transparenttextures.com/patterns/parchment.png');
+            height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff;
+            box-shadow: inset 0 0 200px rgba(0,0,0,0.9);
         }
-        .logo { width: 150px; height: 150px; margin-bottom: 20px; border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
-        h1 { margin-bottom: 30px; font-size: 24px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
-        
-        .menu-buttons { display: flex; flex-direction: column; gap: 15px; width: 80%; max-width: 300px; }
-        button { 
-            padding: 15px; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; 
-            cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
-        .btn-start { background: #white; color: #4285F4; }
-        .btn-uitleg { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; }
-        button:active { transform: scale(0.95); }
 
-        /* Modal voor scrolbare uitleg */
+        /* Overlay voor extra diepte op de achtergrond */
+        .bg-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(101, 67, 33, 0.15);
+            mix-blend-mode: multiply; pointer-events: none; z-index: -1;
+        }
+
+        .logo { 
+            width: 140px; height: 140px; margin-bottom: 20px; 
+            border-radius: 50%; border: 3px double #5d2e0a;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.7); 
+            filter: sepia(0.5) contrast(1.1);
+        }
+
+        h1 { 
+            margin-bottom: 40px; font-size: 28px; text-align: center;
+            text-transform: uppercase; letter-spacing: 3px;
+            color: #f4e4bc; text-shadow: 2px 2px 8px rgba(0,0,0,0.8);
+        }
+        
+        .menu-buttons { display: flex; flex-direction: column; gap: 20px; width: 85%; max-width: 320px; }
+        
+        button { 
+            padding: 18px; border: 2px solid #555; border-radius: 12px; 
+            font-weight: bold; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;
+            cursor: pointer; transition: all 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            background: #000; color: #fff;
+        }
+
+        button:active { transform: scale(0.95); background: #333; }
+
+        /* Specifieke stijl voor secundaire knop */
+        .btn-uitleg { border: 1px solid #444; color: #aaa; background: #111; }
+
+        /* Modal voor scrolbare uitleg in Perkament stijl */
         .modal { 
             display: none; position: fixed; z-index: 10; left: 0; top: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
         }
         .modal-content { 
-            background: white; color: #333; margin: 10% auto; padding: 25px; border-radius: 20px; 
-            width: 80%; max-height: 70vh; overflow-y: auto; /* Zorgt voor de scrollbar */
+            background-color: #f4e4bc; color: #333; margin: 10% auto; padding: 30px; 
+            border-radius: 15px; width: 80%; max-width: 400px; max-height: 70vh; 
+            overflow-y: auto; border: 3px double #5d2e0a;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
         }
-        .btn-sluit { background: #4285F4; color: white; width: 100%; margin-top: 15px; }
+        .modal-content h2 { border-bottom: 1px solid #5d2e0a; padding-bottom: 10px; color: #000; text-align: center; }
+        .modal-content li { margin-bottom: 12px; font-size: 15px; line-height: 1.5; }
+        
+        .btn-sluit { background: #000; color: white; width: 100%; margin-top: 20px; border: none; }
     </style>
 </head>
 <body>
 
-    <img src="jouw-logo.png" alt="Logo" class="logo"> <h1>Mijn GPS Avontuur</h1>
+    <div class="bg-overlay"></div>
+
+    <img src="jouw-logo.png" alt="Logo" class="logo"> 
+    <h1>HET GEHEIM VAN<br>DE OMGEVING</h1>
 
     <div class="menu-buttons">
-        <button class="btn-start" onclick="window.location.href='kaart.html'">Start het Spel</button>
-        <button class="btn-uitleg" onclick="toggleModal(true)">Hoe werkt het?</button>
+        <button onclick="window.location.href='kaart.html'">Start het Avontuur</button>
+        <button class="btn-uitleg" onclick="toggleModal(true)">Instructies</button>
     </div>
 
     <div id="uitlegModal" class="modal">
         <div class="modal-content">
-            <h2>Speluitleg</h2>
-            <p>Welkom bij het spannendste GPS spel van de buurt! Volg deze stappen:</p>
+            <h2>📜 PERKAMENT DER REGELS</h2>
+            <p>Welkom, ontdekkingsreiziger. Om de geheimen te ontrafelen, volgt u deze stappen:</p>
             <ol>
-                <li>Ga naar de kaartpagina.</li>
-                <li>Zet je GPS aan via de blauwe knop.</li>
-                <li>Loop naar de markers op de kaart.</li>
-                <li>Ben je binnen 25 meter? Dan kun je inchecken!</li>
-                <li>Je voortgang wordt automatisch opgeslagen op je telefoon.</li>
-                <li>Bezoek alle locaties om het spel te voltooien.</li>
-                <li>Let altijd op het verkeer en je omgeving!</li>
+                <li>Betreed de kaart der mysteriën.</li>
+                <li>Activeer uw GPS-kompas via de knop.</li>
+                <li>Navigeer naar de gemarkeerde locaties.</li>
+                <li>Zodra u binnen 25 meter bent, kunt u inchecken.</li>
+                <li>Voltooi alle locaties om de missie te volbrengen.</li>
             </ol>
-            <button class="btn-sluit" onclick="toggleModal(false)">Ik snap het!</button>
+            <p><em>Let te allen tijde op de veiligheid en uw omgeving!</em></p>
+            <button class="btn-sluit" onclick="toggleModal(false)">IK BEGRIJP HET</button>
         </div>
     </div>
 
     <script>
         function toggleModal(show) {
             document.getElementById('uitlegModal').style.display = show ? 'block' : 'none';
+        }
+        
+        // Sluit modal als je buiten het perkament klikt
+        window.onclick = function(event) {
+            let modal = document.getElementById('uitlegModal');
+            if (event.target == modal) toggleModal(false);
         }
     </script>
 </body>
