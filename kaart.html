@@ -5,9 +5,37 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
-    body { margin: 0; padding: 0; overflow: hidden; font-family: sans-serif; }
-    #map { height: 100vh; width: 100%; z-index: 1; background: #eee; }
+    body { margin: 0; padding: 0; overflow: hidden; font-family: sans-serif; background: #d2b48c; }
     
+    /* De Kaart met sepia filter */
+    #map { 
+        height: 100vh; 
+        width: 100%; 
+        z-index: 1; 
+        filter: sepia(0.6) brightness(0.9) contrast(1.1);
+    }
+
+    /* Perkament Overlay Laag */
+    #map-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 2;
+        pointer-events: none; /* Klikken gaat door deze laag heen naar de kaart */
+        
+        /* Textuur en Kleur */
+        background-image: url('https://www.transparenttextures.com/patterns/parchment.png');
+        background-color: rgba(139, 69, 19, 0.15); 
+        
+        /* Blend mode voor het oude effect */
+        mix-blend-mode: multiply;
+        
+        /* Donkere randen (Vignette) voor diepte */
+        box-shadow: inset 0 0 150px rgba(0,0,0,0.5);
+    }
+
     /* Bestaande knoppen onderin */
     .controls { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; gap: 8px; width: 95%; pointer-events: none; }
     button { flex: 1; padding: 18px 5px; border: none; border-radius: 15px; font-weight: bold; font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); pointer-events: auto; cursor: pointer; color: white; -webkit-tap-highlight-color: transparent; }
@@ -32,132 +60,18 @@
         background-color: rgba(0,0,0,0.6); backdrop-filter: blur(3px);
     }
     .modal-content {
-        background-color: white; margin: 15% auto; padding: 25px;
+        background-color: #fcf5e5; /* Iets geler voor modal passend bij perkament */
+        margin: 15% auto; padding: 25px;
         border-radius: 20px; width: 80%; max-width: 400px;
         box-shadow: 0 5px 30px rgba(0,0,0,0.3);
+        border: 2px solid #8b4513;
     }
-    .modal-content h2 { margin-top: 0; color: #4285F4; }
+    .modal-content h2 { margin-top: 0; color: #8b4513; }
     .modal-content ul { padding-left: 0; list-style: none; }
-    .modal-content li { margin-bottom: 15px; font-size: 14px; line-height: 1.4; }
+    .modal-content li { margin-bottom: 15px; font-size: 14px; line-height: 1.4; color: #5d2e0a; }
     .btn-close {
-        background: #eee; color: #333; padding: 10px; width: 100%;
+        background: #8b4513; color: #fff; padding: 10px; width: 100%;
         border-radius: 10px; margin-top: 10px; flex: none; box-shadow: none;
     }
 
-    #status-msg { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 10000; background: rgba(0,0,0,0.8); color: white; padding: 8px 15px; border-radius: 20px; font-size: 13px; display: none; }
-  </style>
-</head>
-<body>
-
-<div id="status-msg">Locatie zoeken...</div>
-
-<div class="btn-info" onclick="toggleModal(true)">i</div>
-
-<div id="infoModal" class="modal">
-    <div class="modal-content">
-        <h2>Speluitleg</h2>
-        <ul>
-            <li><strong>📍 GPS:</strong> Zet je eigen locatie aan op de kaart. Doe dit als eerste!</li>
-            <li><strong>✅ Check:</strong> Sta je binnen 25 meter van een marker? Klik hier om in te checken.</li>
-            <li><strong>🏆 Bord:</strong> Bekijk wie er waar heeft ingecheckt.</li>
-        </ul>
-        <button class="btn-close" onclick="toggleModal(false)">Sluiten</button>
-    </div>
-</div>
-
-<div id="map"></div>
-<div class="controls">
-  <button class="btn-loc" onclick="startGps()">📍 GPS</button>
-  <button class="btn-check" onclick="checkCheckpoint()">✅ Check</button>
-  <button class="btn-board" onclick="window.location.href='https://bcboolman.github.io/studious-octo-adventure/spelbord.html'">🏆 Bord</button>
-</div>
-
-<script>
-  // --- MODAL FUNCTIE ---
-  function toggleModal(show) {
-      document.getElementById('infoModal').style.display = show ? 'block' : 'none';
-  }
-
-  // Sluit modal als je buiten het witte vlak klikt
-  window.onclick = function(event) {
-      let modal = document.getElementById('infoModal');
-      if (event.target == modal) toggleModal(false);
-  }
-
-  // --- REST VAN JE BESTAANDE SCRIPT ---
-  const checkpoints = [
-    { name: "Checkpoint 1", lat: 52.169657, lon: 4.633299, url: "https://forms.gle/nLbjTSvbv6XGaDuU8" },
-    { name: "Checkpoint 2", lat: 52.169138, lon: 4.631124, url: "https://forms.gle/9j3fijEjPUkXMMTH6" },
-  ];
-
-  var map = L.map('map', { zoomControl: false }).setView([52.1685, 4.6303], 14);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
-  checkpoints.forEach(cp => {
-    L.marker([cp.lat, cp.lon]).addTo(map).bindPopup(cp.name);
-  });
-
-  var userLat, userLon, userMarker;
-  var watchId = null;
-
-  function startGps() {
-    const status = document.getElementById('status-msg');
-    status.innerHTML = "Locatie zoeken...";
-    status.style.display = 'block';
-    
-    if (!navigator.geolocation) {
-      alert("GPS wordt niet ondersteund.");
-      return;
-    }
-
-    watchId = navigator.geolocation.watchPosition((pos) => {
-      status.style.display = 'none';
-      userLat = pos.coords.latitude;
-      userLon = pos.coords.longitude;
-      if (userMarker) {
-        userMarker.setLatLng([userLat, userLon]);
-      } else {
-        userMarker = L.circleMarker([userLat, userLon], { radius: 10, fillOpacity: 1, color: 'white', weight: 3, fillColor: '#4285F4' }).addTo(map);
-        map.flyTo([userLat, userLon], 17);
-      }
-    }, (err) => { alert("GPS Fout: " + err.message); }, { enableHighAccuracy: true });
-  }
-
-  function getDistance(lat1, lon1, lat2, lon2) {
-    var R = 6371000;
-    var dLat = (lat2-lat1) * Math.PI/180;
-    var dLon = (lon2-lon1) * Math.PI/180;
-    var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-    return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-  }
-
-  function checkCheckpoint() {
-    if (!userLat) {
-      alert("Klik eerst op 'GPS'.");
-      return;
-    }
-
-    let closestDist = Infinity;
-    let foundCheckpoint = null;
-
-    checkpoints.forEach(cp => {
-      const d = getDistance(userLat, userLon, cp.lat, cp.lon);
-      if (d < closestDist) {
-        closestDist = d;
-        foundCheckpoint = cp;
-      }
-    });
-
-    if (closestDist <= 25) {
-      window.location.href = foundCheckpoint.url;
-    } else {
-      alert("Nog niet dichtbij genoeg! Afstand tot dichtstbijzijnde punt: " + Math.round(closestDist) + " meter.");
-    }
-  }
-
-  L.DomEvent.disableClickPropagation(document.querySelector('.controls'));
-  // Zorg ook dat info knop niet door de kaart klikt
-  L.DomEvent.disableClickPropagation(document.querySelector('.btn-info'));
-</script>
-</body>
-</html>
+    #status-msg { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 10000; background: rgba(0,0,0,0.8); color: white; padding:
