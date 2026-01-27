@@ -74,4 +74,124 @@
         border-radius: 10px; margin-top: 10px; flex: none; box-shadow: none;
     }
 
-    #status-msg { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 10000; background: rgba(0,0,0,0.8); color: white; padding:
+    #status-msg { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 10000; background: rgba(0,0,0,0.8); color: white; padding: 8px 15px; border-radius: 20px; font-size: 13px; display: none; }
+  </style>
+</head>
+<body>
+
+<div id="status-msg">Locatie zoeken...</div>
+
+<div id="map-overlay"></div>
+
+<div class="btn-info" onclick="toggleModal(true)">i</div>
+
+<div id="infoModal" class="modal">
+    <div class="modal-content">
+        <h2>📜 Speluitleg</h2>
+        <ul>
+            <li><strong>📍 GPS:</strong> Zet je eigen locatie aan op de kaart. Doe dit als eerste!</li>
+            <li><strong>✅ Check:</strong> Sta je binnen 25 meter van een marker? Klik hier om in te checken.</li>
+            <li><strong>🏆 Bord:</strong> Bekijk wie er waar heeft ingecheckt.</li>
+        </ul>
+        <button class="btn-close" onclick="toggleModal(false)">Sluiten</button>
+    </div>
+</div>
+
+<div id="map"></div>
+<div class="controls">
+  <button class="btn-loc" onclick="startGps()">📍 GPS</button>
+  <button class="btn-check" onclick="checkCheckpoint()">✅ Check</button>
+  <button class="btn-board" onclick="window.location.href='https://bcboolman.github.io/studious-octo-adventure/spelbord.html'">🏆 Bord</button>
+</div>
+
+<script>
+  // --- MODAL FUNCTIE ---
+  function toggleModal(show) {
+      document.getElementById('infoModal').style.display = show ? 'block' : 'none';
+  }
+
+  window.onclick = function(event) {
+      let modal = document.getElementById('infoModal');
+      if (event.target == modal) toggleModal(false);
+  }
+
+  // --- MAP SETUP ---
+  const checkpoints = [
+    { name: "Checkpoint 1", lat: 52.169657, lon: 4.633299, url: "https://forms.gle/nLbjTSvbv6XGaDuU8" },
+    { name: "Checkpoint 2", lat: 52.169138, lon: 4.631124, url: "https://forms.gle/9j3fijEjPUkXMMTH6" },
+  ];
+
+  var map = L.map('map', { zoomControl: false }).setView([52.1685, 4.6303], 14);
+  
+  // Standaard OSM tiles
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+  }).addTo(map);
+
+  checkpoints.forEach(cp => {
+    L.marker([cp.lat, cp.lon]).addTo(map).bindPopup(cp.name);
+  });
+
+  var userLat, userLon, userMarker;
+  var watchId = null;
+
+  function startGps() {
+    const status = document.getElementById('status-msg');
+    status.innerHTML = "Locatie zoeken...";
+    status.style.display = 'block';
+    
+    if (!navigator.geolocation) {
+      alert("GPS wordt niet ondersteund.");
+      return;
+    }
+
+    watchId = navigator.geolocation.watchPosition((pos) => {
+      status.style.display = 'none';
+      userLat = pos.coords.latitude;
+      userLon = pos.coords.longitude;
+      if (userMarker) {
+        userMarker.setLatLng([userLat, userLon]);
+      } else {
+        userMarker = L.circleMarker([userLat, userLon], { radius: 10, fillOpacity: 1, color: '#8b4513', weight: 3, fillColor: '#ffffff' }).addTo(map);
+        map.flyTo([userLat, userLon], 17);
+      }
+    }, (err) => { alert("GPS Fout: " + err.message); }, { enableHighAccuracy: true });
+  }
+
+  function getDistance(lat1, lon1, lat2, lon2) {
+    var R = 6371000;
+    var dLat = (lat2-lat1) * Math.PI/180;
+    var dLon = (lon2-lon1) * Math.PI/180;
+    var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+    return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+  }
+
+  function checkCheckpoint() {
+    if (!userLat) {
+      alert("Klik eerst op 'GPS'.");
+      return;
+    }
+
+    let closestDist = Infinity;
+    let foundCheckpoint = null;
+
+    checkpoints.forEach(cp => {
+      const d = getDistance(userLat, userLon, cp.lat, cp.lon);
+      if (d < closestDist) {
+        closestDist = d;
+        foundCheckpoint = cp;
+      }
+    });
+
+    if (closestDist <= 25) {
+      window.location.href = foundCheckpoint.url;
+    } else {
+      alert("Nog niet dichtbij genoeg! Afstand tot dichtstbijzijnde punt: " + Math.round(closestDist) + " meter.");
+    }
+  }
+
+  L.DomEvent.disableClickPropagation(document.querySelector('.controls'));
+  L.DomEvent.disableClickPropagation(document.querySelector('.btn-info'));
+</script>
+</body>
+</html>
