@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        :root {
+            --gemini-gradient: linear-gradient(70deg, #4285f4, #9b72cb, #d96570);
+            --bg-light: #f8f9fa;
+            --text-main: #1f1f1f;
+        }
+
+        body { margin: 0; padding: 0; overflow: hidden; font-family: 'Google Sans', sans-serif; background: var(--bg-light); }
+        
+        #map { height: 100vh; width: 100%; z-index: 1; }
+
+        /* Voortgangsbalk bovenin */
+        .progress-container {
+            position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
+            z-index: 1000; width: 70%; max-width: 300px;
+            background: white; padding: 10px 20px; border-radius: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center;
+            font-size: 14px; font-weight: 500; color: var(--text-main);
+        }
+
+        /* Bestaande knoppen in Gemini-stijl */
+        .controls { 
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); 
+            z-index: 1000; display: flex; gap: 10px; width: 90%; max-width: 400px; 
+        }
+        
+        button { 
+            flex: 1; padding: 16px 5px; border: none; border-radius: 24px; 
+            font-weight: 500; font-size: 14px; cursor: pointer;
+            transition: all 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn-loc { background: white; color: var(--text-main); border: 1px solid #dadce0; }
+        .btn-check { background: var(--gemini-gradient); color: white; }
+        .btn-board { background: #1f1f1f; color: white; }
+
+        /* De 'i' knop rechtsboven */
+        .btn-info {
+            position: fixed; top: 15px; right: 15px; z-index: 1000;
+            width: 40px; height: 40px; border-radius: 50%;
+            background: white; color: var(--text-main); border: 1px solid #dadce0;
+            font-weight: bold; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Status bericht */
+        #status-msg { 
+            position: fixed; top: 75px; left: 50%; transform: translateX(-50%); 
+            z-index: 1000; background: rgba(31, 31, 31, 0.9); color: white; 
+            padding: 6px 16px; border-radius: 20px; font-size: 12px; display: none; 
+        }
+
+        /* Groene filter voor bezochte markers */
+        .marker-done { filter: hue-rotate(140deg) brightness(0.8); }
+    </style>
+</head>
+<body>
+
+<div id="status-msg">Locatie zoeken...</div>
+<div class="progress-container" id="progress-text">Voortgang: 0 / 0</div>
+<div class="btn-info" onclick="window.location.href='index.html'">✦</div>
+
+<div id="map"></div>
+
+<div class="controls">
+  <button class="btn-loc" onclick="startGps()">📍 GPS</button>
+  <button class="btn-check" onclick="checkCheckpoint()">✅ Check-in</button>
+  <button class="btn-board" onclick="window.location.href='spelbord.html'">🏆 Bord</button>
+</div>
+
+<script>
+  const checkpoints = [
+    { name: "Checkpoint 1", lat: 52.169657, lon: 4.633299, url: "https://forms.gle/nLbjTSvbv6XGaDuU8" },
+    { name: "Checkpoint 2", lat: 52.169138, lon: 4.631124, url: "https://forms.gle/9j3fijEjPUkXMMTH6" },
+  ];
+
+  var map = L.map('map', { zoomControl: false }).setView([52.1685, 4.6303], 14);
+  L.tileLayer('https://{s}.tile.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
+
+  let markers = {};
+
+  function renderMarkers() {
+    let gevonden = 0;
+    checkpoints.forEach(cp => {
+      const isBezocht = localStorage.getItem(cp.name) === "voltooid";
+      if(isBezocht) gevonden++;
+
+      if (!markers[cp.name]) {
+        markers[cp.name] = L.marker([cp.lat, cp.lon]).addTo(map).bindPopup(cp.name);
+      }
+
+      // Pas kleur aan als bezocht
+      if (isBezocht) {
+        markers[cp.name]._icon.classList.add('marker-done');
+      }
+    });
+    document.getElementById('progress-text').innerText = `Voortgang: ${gevonden} / ${checkpoints.length}`;
+  }
+
+  var userLat, userLon, userMarker;
+
+  function startGps() {
+    const status = document.getElementById('status-msg');
+    status.style.display = 'block';
+    
+    navigator.geolocation.watchPosition((pos) => {
+      status.style.display = 'none';
+      userLat = pos.coords.latitude;
+      userLon = pos.coords.longitude;
+      if (userMarker) {
+        userMarker.setLatLng([userLat, userLon]);
+      } else {
+        userMarker = L.circleMarker([userLat, userLon], { radius: 8, fillOpacity: 1, color: 'white', weight: 3, fillColor: '#4285F4' }).addTo(map);
+        map.flyTo([userLat, userLon], 17);
+      }
+    }, (err) => { alert("GPS Fout: " + err.message); }, { enableHighAccuracy: true });
+  }
+
+  function getDistance(lat1, lon1, lat2, lon2) {
+    var R = 6371000;
+    var dLat = (lat2-lat1) * Math.PI/180;
+    var dLon = (lon2-lon1) * Math.PI/180;
+    var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+    return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+  }
+
+  function checkCheckpoint() {
+    if (!userLat) { alert("Start eerst je GPS"); return; }
+
+    let closestDist = Infinity;
+    let foundCp = null;
+
+    checkpoints.forEach(cp => {
+      const d = getDistance(userLat, userLon, cp.lat, cp.lon);
+      if (d < closestDist) { closestDist = d; foundCp = cp; }
+    });
+
+    if (closestDist <= 25) {
+      localStorage.setItem(foundCp.name, "voltooid");
+      renderMarkers();
+      alert("Succes! Je bent ingecheckt bij " + foundCp
