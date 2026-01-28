@@ -11,6 +11,11 @@
         height: 100vh; 
         width: 100%; 
         z-index: 1; 
+        /* Filter hier verwijderd zodat overlays hun kleur behouden */
+    }
+
+    /* OPLOSSING: Filter alleen toepassen op de kaartlaag (tiles) */
+    .leaflet-tile-container {
         filter: sepia(0.8) brightness(0.8) contrast(1.2);
     }
 
@@ -55,7 +60,7 @@
     
     #status-msg { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); z-index: 10000; background: #000; color: white; padding: 8px 15px; border-radius: 10px; font-size: 13px; display: none; border: 1px solid #555; }
     
-    /* Popup styling voor de raadsels */
+    /* Popup styling */
     .leaflet-popup-content-wrapper { background: #f4e4bc; color: #5d2e0a; border: 2px solid #800020; font-family: 'Georgia', serif; }
     .leaflet-popup-tip { background: #800020; }
   </style>
@@ -82,19 +87,17 @@
 </div>
 
 <script>
-  // --- CONFIGURATIE GEBIEDEN ---
-  // Vul hier je 10 gebieden in.
   const areas = [
     {
       name: "Het Oude Bos",
       riddle: "Ik heb bladeren maar geen papier, ik heb wortels maar loop nooit hier. Waar ben ik?",
-      coords: [ // De hoekpunten van het gebied op de kaart
+      coords: [
         [52.1690, 4.6310],
         [52.1700, 4.6310],
         [52.1700, 4.6330],
         [52.1690, 4.6330]
       ],
-      targetLat: 52.169657, // De exacte plek waar ze moeten staan
+      targetLat: 52.169657,
       targetLon: 4.633299,
       url: "https://forms.gle/nLbjTSvbv6XGaDuU8"
     },
@@ -111,7 +114,6 @@
       targetLon: 4.6308,
       url: "https://forms.gle/9j3fijEjPUkXMMTH6"
     }
-    // Voeg hier de overige 8 gebieden toe op dezelfde wijze
   ];
 
   function toggleModal(show) {
@@ -121,13 +123,13 @@
   var map = L.map('map', { zoomControl: false }).setView([52.1685, 4.6303], 15);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-  // Teken de gebieden
+  // Gebieden tekenen
   areas.forEach(area => {
     L.polygon(area.coords, {
       color: '#800020',       // Bordeaux rood rand
       fillColor: '#800020',   // Bordeaux rood opvulling
-      fillOpacity: 0.4,       // Semi-transparant
-      weight: 3               // Dikte van de rand
+      fillOpacity: 0.5,       // Verhoogd voor iets betere zichtbaarheid
+      weight: 3
     })
     .addTo(map)
     .bindPopup(`<b>${area.name}</b><br><br>${area.riddle}`);
@@ -172,10 +174,9 @@
     }
 
     let found = false;
-
     areas.forEach(area => {
       const dist = getDistance(userLat, userLon, area.targetLat, area.targetLon);
-      if (dist <= 20) { // Radius van 20 meter
+      if (dist <= 20) {
         found = true;
         window.location.href = area.url;
       }
