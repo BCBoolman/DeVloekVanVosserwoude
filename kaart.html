@@ -7,16 +7,20 @@
   <style>
     body { margin: 0; padding: 0; overflow: hidden; font-family: 'Georgia', serif; background: #222; }
     
-    #map { 
-        height: 100vh; 
-        width: 100%; 
-        z-index: 1; 
-        /* Filter hier verwijderd zodat overlays hun kleur behouden */
-    }
+    #map { height: 100vh; width: 100%; z-index: 1; }
 
-    /* OPLOSSING: Filter alleen toepassen op de kaartlaag (tiles) */
+    /* Filter alleen op de kaarttegels */
     .leaflet-tile-container {
         filter: sepia(0.8) brightness(0.8) contrast(1.2);
+    }
+
+    /* Styling voor de cijfers in het midden van de gebieden */
+    .area-number {
+        font-size: 20px;
+        font-weight: bold;
+        color: #000; /* Zwart cijfer */
+        text-align: center;
+        text-shadow: 0px 0px 3px rgba(255,255,255,0.5); /* Lichte gloed voor leesbaarheid */
     }
 
     #map-overlay {
@@ -60,7 +64,6 @@
     
     #status-msg { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); z-index: 10000; background: #000; color: white; padding: 8px 15px; border-radius: 10px; font-size: 13px; display: none; border: 1px solid #555; }
     
-    /* Popup styling */
     .leaflet-popup-content-wrapper { background: #f4e4bc; color: #5d2e0a; border: 2px solid #800020; font-family: 'Georgia', serif; }
     .leaflet-popup-tip { background: #800020; }
   </style>
@@ -74,7 +77,7 @@
 <div id="infoModal" class="modal">
     <div class="modal-content">
         <h2>HET GEHEIM</h2>
-        <p>Klik op de bordeaux rode gebieden voor een raadsel. Los het op en ga naar de plek!</p>
+        <p>Ga naar de genummerde gebieden en los de raadsels op!</p>
         <button style="width:100%" onclick="toggleModal(false)">SLUITEN</button>
     </div>
 </div>
@@ -88,7 +91,7 @@
 
 <script>
   const areas = [
-    {
+   {
       name: "De Vijver",
       riddle: "loop naar de visplek op de brug",
       coords: [
@@ -123,16 +126,30 @@
   var map = L.map('map', { zoomControl: false }).setView([52.1685, 4.6303], 15);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-  // Gebieden tekenen
-  areas.forEach(area => {
-    L.polygon(area.coords, {
-      color: '#800020',       // Bordeaux rood rand
-      fillColor: '#800020',   // Bordeaux rood opvulling
-      fillOpacity: 0.5,       // Verhoogd voor iets betere zichtbaarheid
+  // Gebieden tekenen inclusief CIJFERS
+  areas.forEach((area, index) => {
+    // 1. Teken de polygon
+    var polygon = L.polygon(area.coords, {
+      color: '#800020',
+      fillColor: '#800020',
+      fillOpacity: 0.5,
       weight: 3
-    })
-    .addTo(map)
-    .bindPopup(`<b>${area.name}</b><br><br>${area.riddle}`);
+    }).addTo(map);
+
+    polygon.bindPopup(`<b>Gebied ${index + 1}: ${area.name}</b><br><br>${area.riddle}`);
+
+    // 2. Bereken het midden van het gebied voor het cijfer
+    var center = polygon.getBounds().getCenter();
+
+    // 3. Voeg een onzichtbare marker toe met alleen het cijfer als tekst
+    var numberIcon = L.divIcon({
+        className: 'area-number',
+        html: index + 1,
+        iconSize: [30, 30],
+        iconAnchor: [15, 10] // Plaatst het cijfer precies in het midden
+    });
+
+    L.marker(center, { icon: numberIcon, interactive: false }).addTo(map);
   });
 
   var userLat, userLon, userMarker;
@@ -140,11 +157,7 @@
   function startGps() {
     const status = document.getElementById('status-msg');
     status.style.display = 'block';
-    
-    if (!navigator.geolocation) {
-      alert("GPS wordt niet ondersteund.");
-      return;
-    }
+    if (!navigator.geolocation) return;
 
     navigator.geolocation.watchPosition((pos) => {
       status.style.display = 'none';
@@ -168,23 +181,15 @@
   }
 
   function checkCheckpoint() {
-    if (!userLat) {
-      alert("Activeer eerst de GPS via de knop.");
-      return;
-    }
-
+    if (!userLat) { alert("Activeer eerst de GPS."); return; }
     let found = false;
     areas.forEach(area => {
-      const dist = getDistance(userLat, userLon, area.targetLat, area.targetLon);
-      if (dist <= 20) {
+      if (getDistance(userLat, userLon, area.targetLat, area.targetLon) <= 20) {
         found = true;
         window.location.href = area.url;
       }
     });
-
-    if (!found) {
-      alert("Je bent nog niet op de juiste plek voor een van de raadsels. Zoek goed verder!");
-    }
+    if (!found) alert("Nog niet op de juiste plek!");
   }
 
   L.DomEvent.disableClickPropagation(document.querySelector('.controls'));
