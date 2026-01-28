@@ -2,37 +2,44 @@
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
   <style>
+    /* Basis styling: verwijdert marges en zorgt dat de kaart het hele scherm vult */
     body { margin: 0; padding: 0; overflow: hidden; font-family: 'Georgia', serif; background: #222; }
     
+    /* De container waar de kaart in verschijnt */
     #map { height: 100vh; width: 100%; z-index: 1; }
 
-    /* Filter alleen op de kaarttegels */
+    /* Filter voor een 'oude kaart' look (sepia en donkerder) */
     .leaflet-tile-container {
         filter: sepia(0.8) brightness(0.8) contrast(1.2);
     }
 
-    /* Styling voor de cijfers in het midden van de gebieden */
+    /* Styling voor de cijfers (1, 2, etc.) die op de kaart verschijnen */
     .area-number {
         font-size: 20px;
         font-weight: bold;
-        color: #000; /* Zwart cijfer */
+        color: #000;
         text-align: center;
-        text-shadow: 0px 0px 3px rgba(255,255,255,0.5); /* Lichte gloed voor leesbaarheid */
+        text-shadow: 0px 0px 3px rgba(255,255,255,0.5);
     }
 
+    /* Een overlay over de kaart om een perkament/papier textuur te geven */
     #map-overlay {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        z-index: 2; pointer-events: none; 
+        z-index: 2; pointer-events: none; /* Zorgt dat je door de laag heen kunt klikken */
         background-image: url('https://www.transparenttextures.com/patterns/parchment.png');
         background-color: rgba(101, 67, 33, 0.2); 
         mix-blend-mode: multiply;
         box-shadow: inset 0 0 200px rgba(0,0,0,0.8), inset 0 0 100px rgba(0,0,0,0.9);
     }
 
+    /* Knoppen onderaan het scherm */
     .controls { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; gap: 10px; width: 95%; pointer-events: none; }
+    
     button { 
         flex: 1; padding: 18px 5px; border: 2px solid #555; border-radius: 12px; 
         font-weight: bold; font-size: 13px; background: #000; color: #fff; 
@@ -42,6 +49,7 @@
     
     button:active { background: #333; transform: translateY(2px); }
     
+    /* Het ronde informatie-knopje (?) rechtsboven */
     .btn-info {
         position: fixed; top: 15px; right: 15px; z-index: 10001;
         width: 40px; height: 40px; border-radius: 50%;
@@ -50,6 +58,7 @@
         align-items: center; justify-content: center; cursor: pointer;
     }
 
+    /* Pop-up venster (Modal) styling */
     .modal {
         display: none; position: fixed; z-index: 10002;
         left: 0; top: 0; width: 100%; height: 100%;
@@ -62,8 +71,10 @@
         text-align: center;
     }
     
+    /* Berichtje dat verschijnt als de GPS aan het zoeken is */
     #status-msg { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); z-index: 10000; background: #000; color: white; padding: 8px 15px; border-radius: 10px; font-size: 13px; display: none; border: 1px solid #555; }
     
+    /* Styling voor de tekstballonnetjes (popups) op de kaart */
     .leaflet-popup-content-wrapper { background: #f4e4bc; color: #5d2e0a; border: 2px solid #800020; font-family: 'Georgia', serif; }
     .leaflet-popup-tip { background: #800020; }
   </style>
@@ -90,20 +101,21 @@
 </div>
 
 <script>
+  // DE DATA: Hier kun je makkelijk gebieden toevoegen of aanpassen
   const areas = [
    {
       name: "De Vijver",
       riddle: "loop naar de visplek op de brug",
-      coords: [
+      coords: [ // De hoekpunten van het vlak op de kaart
         [52.1667, 4.5260],
         [52.1681, 4.5293],
         [52.1666, 4.5303],
         [52.1665, 4.5287],
         [52.1661, 4.5276]
       ],
-      targetLat: 52.16695,
+      targetLat: 52.16695, // De exacte plek waar de CHECK knop werkt
       targetLon: 4.52805,
-      url: "https://forms.gle/nLbjTSvbv6XGaDuU8"
+      url: "https://forms.gle/nLbjTSvbv6XGaDuU8" // Waar je naartoe gaat na de CHECK
     },
     {
       name: "Dwars",
@@ -119,16 +131,20 @@
     }
   ];
 
+  // Functie om het info-scherm te openen of sluiten
   function toggleModal(show) {
       document.getElementById('infoModal').style.display = show ? 'block' : 'none';
   }
 
-  var map = L.map('map', { zoomControl: false }).setView([52.1685, 4.6303], 15);
+  // De kaart initialiseren op een startpositie en zoomniveau
+  var map = L.map('map', { zoomControl: false }).setView([52.16783614098873, 4.533806649681188], 15);
+  
+  // De kaarttegels laden (OpenStreetMap)
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-  // Gebieden tekenen inclusief CIJFERS
+  // Loop door alle gebieden uit de 'areas' lijst en teken ze op de kaart
   areas.forEach((area, index) => {
-    // 1. Teken de polygon
+    // 1. Teken het vlak (de polygon)
     var polygon = L.polygon(area.coords, {
       color: '#800020',
       fillColor: '#800020',
@@ -136,62 +152,77 @@
       weight: 3
     }).addTo(map);
 
+    // Voeg een popup toe die verschijnt als je op het vlak klikt
     polygon.bindPopup(`<b>Gebied ${index + 1}: ${area.name}</b><br><br>${area.riddle}`);
 
-    // 2. Bereken het midden van het gebied voor het cijfer
+    // 2. Bereken automatisch het midden van het gebied voor het nummer
     var center = polygon.getBounds().getCenter();
 
-    // 3. Voeg een onzichtbare marker toe met alleen het cijfer als tekst
+    // 3. Maak een icoon voor het cijfer
     var numberIcon = L.divIcon({
         className: 'area-number',
-        html: index + 1,
+        html: index + 1, // Toont 1, 2, 3...
         iconSize: [30, 30],
-        iconAnchor: [15, 10] // Plaatst het cijfer precies in het midden
+        iconAnchor: [15, 10]
     });
 
+    // Zet de marker met het cijfer op de kaart
     L.marker(center, { icon: numberIcon, interactive: false }).addTo(map);
   });
 
   var userLat, userLon, userMarker;
 
+  // Functie die de GPS van de gebruiker start en volgt
   function startGps() {
     const status = document.getElementById('status-msg');
-    status.style.display = 'block';
+    status.style.display = 'block'; // Laat "Zoeken..." zien
+    
     if (!navigator.geolocation) return;
 
+    // Blijf de positie van de gebruiker volgen
     navigator.geolocation.watchPosition((pos) => {
-      status.style.display = 'none';
+      status.style.display = 'none'; // Verberg "Zoeken..." als locatie gevonden is
       userLat = pos.coords.latitude;
       userLon = pos.coords.longitude;
+      
       if (userMarker) {
+        // Als de stip al bestaat, verplaats hem naar de nieuwe locatie
         userMarker.setLatLng([userLat, userLon]);
       } else {
+        // Maak een witte stip met zwarte rand voor de gebruiker
         userMarker = L.circleMarker([userLat, userLon], { radius: 9, fillOpacity: 1, color: '#000', weight: 4, fillColor: '#fff' }).addTo(map);
+        // Vlieg de camera naar de gebruiker toe bij de eerste keer vinden
         map.flyTo([userLat, userLon], 17);
       }
     }, (err) => { alert("GPS Fout: " + err.message); }, { enableHighAccuracy: true });
   }
 
+  // Wiskundige formule om de afstand in meters tussen twee GPS punten te berekenen
   function getDistance(lat1, lon1, lat2, lon2) {
-    var R = 6371000;
+    var R = 6371000; // Straal van de aarde in meters
     var dLat = (lat2-lat1) * Math.PI/180;
     var dLon = (lon2-lon1) * Math.PI/180;
     var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2) * Math.sin(dLon/2);
     return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
   }
 
+  // Functie voor de CHECK knop
   function checkCheckpoint() {
     if (!userLat) { alert("Activeer eerst de GPS."); return; }
+    
     let found = false;
     areas.forEach(area => {
+      // Controleer of de gebruiker binnen 20 meter van het targetLat/targetLon van een gebied is
       if (getDistance(userLat, userLon, area.targetLat, area.targetLon) <= 20) {
         found = true;
-        window.location.href = area.url;
+        window.location.href = area.url; // Stuur door naar het Google Form
       }
     });
+    
     if (!found) alert("Nog niet op de juiste plek!");
   }
 
+  // Voorkom dat klikken op de knoppen ook een klik op de kaart eronder triggert
   L.DomEvent.disableClickPropagation(document.querySelector('.controls'));
   L.DomEvent.disableClickPropagation(document.querySelector('.btn-info'));
 </script>
