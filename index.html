@@ -3,21 +3,28 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <style>
+        /* Basisinstellingen voor de hele pagina */
         body { 
             margin: 0; padding: 0; font-family: 'Georgia', serif; 
-            /* Achtergrond met perkament textuur en zware vignette */
+            /* Achtergrond met perkament textuur en donkere randen (vignette) */
             background: #222 url('https://www.transparenttextures.com/patterns/parchment.png');
-            height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff;
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            color: #fff;
             box-shadow: inset 0 0 200px rgba(0,0,0,0.9);
         }
 
-        /* Overlay voor extra diepte op de achtergrond */
+        /* De onzichtbare laag die de bruine 'gloed' over de achtergrond geeft */
         .bg-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(101, 67, 33, 0.15);
             mix-blend-mode: multiply; pointer-events: none; z-index: -1;
         }
 
+        /* Styling voor de ronde afbeelding (logo) bovenaan */
         .logo { 
             width: 140px; height: 140px; margin-bottom: 20px; 
             border-radius: 50%; border: 3px double #5d2e0a;
@@ -25,14 +32,18 @@
             filter: sepia(0.5) contrast(1.1);
         }
 
+        /* De hoofdtitel: nu aangepast naar Bordeaux Rood (#800020) */
         h1 { 
             margin-bottom: 40px; font-size: 28px; text-align: center;
             text-transform: uppercase; letter-spacing: 3px;
-            color: #f4e4bc; text-shadow: 2px 2px 8px rgba(0,0,0,0.8);
+            color: #800020; /* Bordeaux rood match met de kaart */
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.2), 2px 2px 8px rgba(0,0,0,0.8);
         }
         
+        /* Container die de knoppen netjes onder elkaar zet */
         .menu-buttons { display: flex; flex-direction: column; gap: 20px; width: 85%; max-width: 320px; }
         
+        /* Standaard styling voor de menu-knoppen */
         button { 
             padding: 18px; border: 2px solid #555; border-radius: 12px; 
             font-weight: bold; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;
@@ -40,25 +51,33 @@
             background: #000; color: #fff;
         }
 
+        /* Effect als je op een knop drukt (hij krimpt een klein beetje) */
         button:active { transform: scale(0.95); background: #333; }
 
-        /* Specifieke stijl voor secundaire knop */
+        /* Styling voor de 'Instructies' knop (iets subtieler dan de startknop) */
         .btn-uitleg { border: 1px solid #444; color: #aaa; background: #111; }
 
-        /* Modal voor scrolbare uitleg in Perkament stijl */
+        /* Het zwarte gordijn achter het perkament-venster */
         .modal { 
             display: none; position: fixed; z-index: 10; left: 0; top: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
         }
+
+        /* Het perkamenten venster zelf */
         .modal-content { 
             background-color: #f4e4bc; color: #333; margin: 10% auto; padding: 30px; 
             border-radius: 15px; width: 80%; max-width: 400px; max-height: 70vh; 
             overflow-y: auto; border: 3px double #5d2e0a;
             box-shadow: 0 10px 40px rgba(0,0,0,0.8);
         }
+
+        /* Koptekst in het perkamenten venster */
         .modal-content h2 { border-bottom: 1px solid #5d2e0a; padding-bottom: 10px; color: #000; text-align: center; }
+        
+        /* Ruimte tussen de regels van de uitleg-lijst */
         .modal-content li { margin-bottom: 12px; font-size: 15px; line-height: 1.5; }
         
+        /* De sluit-knop onderaan het perkament */
         .btn-sluit { background: #000; color: white; width: 100%; margin-top: 20px; border: none; }
     </style>
 </head>
@@ -66,8 +85,9 @@
 
     <div class="bg-overlay"></div>
 
-    <img src="jouw-logo.png" alt="Logo" class="logo"> 
-    <h1>HET GEHEIM VAN<br>DE OMGEVING</h1>
+    <img src="images/placeholder.jpg" alt="Logo" class="logo"> 
+    
+    <h1>De Vampier Van<br>Vosserwoude</h1>
 
     <div class="menu-buttons">
         <button onclick="window.location.href='kaart.html'">Start het Avontuur</button>
@@ -91,11 +111,12 @@
     </div>
 
     <script>
+        // Functie om het uitleg-venster te tonen of te verbergen
         function toggleModal(show) {
             document.getElementById('uitlegModal').style.display = show ? 'block' : 'none';
         }
         
-        // Sluit modal als je buiten het perkament klikt
+        // Extra luxe: als je naast het perkament klikt op het zwarte gedeelte, sluit het venster ook
         window.onclick = function(event) {
             let modal = document.getElementById('uitlegModal');
             if (event.target == modal) toggleModal(false);
