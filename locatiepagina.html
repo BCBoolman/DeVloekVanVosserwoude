@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Locatie</title>
+    <style>
+        body { background: #f4e4bc; font-family: 'Georgia', serif; text-align: center; padding: 50px; }
+        .box { border: 3px double #5d2e0a; padding: 20px; display: inline-block; border-radius: 15px; }
+        .hidden { display: none; } /* Verbergt de inhoud standaard */
+    </style>
+</head>
+<body>
+
+    <div id="denied-msg">
+        <h1>Toegang Geweigerd!</h1>
+        <p>Je hebt deze locatie nog niet bereikt via de kaart.</p>
+        <button onclick="window.location.href='index.html'">Ga terug naar de kaart</button>
+    </div>
+
+    <div id="content" class="hidden">
+        <div class="box">
+            <h1>GEFELICITEERD!</h1>
+            <p>Je hebt de locatie <b id="loc-name">...</b> gevonden.</p>
+            <p>Hier is je volgende raadsel of formulier:</p>
+            <a href="https://forms.gle/jouw-link" target="_blank">Open het Google Form</a>
+        </div>
+    </div>
+
+    <script>
+        // CONTROLE FUNCTIE
+        function checkAccess() {
+            // 1. Haal de token uit de URL (bijv. ?auth=GPS_...)
+            const urlParams = new URLSearchParams(window.location.search);
+            const hasToken = urlParams.has('auth');
+
+            // 2. Controleer of de browser de sessie-bevestiging heeft opgeslagen
+            const sessionValid = sessionStorage.getItem('checkpointReached') === 'true';
+            const locationName = sessionStorage.getItem('locationName');
+
+            // 3. Beslis of de gebruiker door mag
+            if (hasToken && sessionValid) {
+                // Toegang toegestaan
+                document.getElementById('denied-msg').classList.add('hidden');
+                document.getElementById('content').classList.remove('hidden');
+                document.getElementById('loc-name').innerText = locationName;
+            } else {
+                // Toegang geweigerd (gebeurt als ze de link intypen zonder GPS te gebruiken)
+                console.log("Geen geldige sessie gevonden.");
+            }
+        }
+
+        // Voer de check direct uit bij het laden
+        window.onload = checkAccess;
+    </script>
+</body>
+</html>
