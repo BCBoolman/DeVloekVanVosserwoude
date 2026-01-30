@@ -1,54 +1,61 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Locatie</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Locatie Gevonden!</title>
     <style>
-        body { background: #f4e4bc; font-family: 'Georgia', serif; text-align: center; padding: 50px; }
-        .box { border: 3px double #5d2e0a; padding: 20px; display: inline-block; border-radius: 15px; }
-        .hidden { display: none; } /* Verbergt de inhoud standaard */
+        body { background: #f4e4bc; font-family: 'Georgia', serif; text-align: center; padding: 30px; color: #5d2e0a; }
+        .box { border: 3px double #5d2e0a; padding: 25px; display: inline-block; border-radius: 15px; background: rgba(255,255,255,0.3); max-width: 90%; }
+        .btn-link { display: inline-block; margin-top: 20px; padding: 15px 25px; background: #800020; color: white; text-decoration: none; border-radius: 10px; font-weight: bold; text-transform: uppercase; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
     <div id="denied-msg">
         <h1>Toegang Geweigerd!</h1>
-        <p>Je hebt deze locatie nog niet bereikt via de kaart.</p>
-        <button onclick="window.location.href='index.html'">Ga terug naar de kaart</button>
+        <p>Je bent nog niet op de juiste plek geweest.</p>
+        <a href="index.html" class="btn-link" style="background: #000;">Terug naar de kaart</a>
     </div>
 
     <div id="content" class="hidden">
         <div class="box">
-            <h1>GEFELICITEERD!</h1>
-            <p>Je hebt de locatie <b id="loc-name">...</b> gevonden.</p>
-            <p>Hier is je volgende raadsel of formulier:</p>
-            <a href="https://forms.gle/jouw-link" target="_blank">Open het Google Form</a>
+            <h1>LOCATIE BEREIKT!</h1>
+            <p>Goed gedaan! Je bent nu bij:</p>
+            <h2 id="loc-display">...</h2> <p>Klik op de knop hieronder om het raadsel op te lossen:</p>
+            
+            <a id="form-button" href="#" class="btn-link">Open Raadsel</a>
         </div>
     </div>
 
     <script>
-        // CONTROLE FUNCTIE
+        // Een lijstje (object) waarin we de locatienamen koppelen aan de juiste Google Forms
+        const formLinks = {
+            "De Vijver": "https://forms.gle/link_voor_vijver",
+            "Dwars": "https://forms.gle/link_voor_dwars",
+            // Je kunt hier simpelweg uitbreiden naar 10 of meer...
+        };
+
         function checkAccess() {
-            // 1. Haal de token uit de URL (bijv. ?auth=GPS_...)
             const urlParams = new URLSearchParams(window.location.search);
             const hasToken = urlParams.has('auth');
-
-            // 2. Controleer of de browser de sessie-bevestiging heeft opgeslagen
             const sessionValid = sessionStorage.getItem('checkpointReached') === 'true';
             const locationName = sessionStorage.getItem('locationName');
 
-            // 3. Beslis of de gebruiker door mag
-            if (hasToken && sessionValid) {
-                // Toegang toegestaan
+            // Controleer of de sessie geldig is EN of de locatienaam bekend is in onze lijst
+            if (hasToken && sessionValid && formLinks[locationName]) {
+                // 1. Toon de content
                 document.getElementById('denied-msg').classList.add('hidden');
                 document.getElementById('content').classList.remove('hidden');
-                document.getElementById('loc-name').innerText = locationName;
-            } else {
-                // Toegang geweigerd (gebeurt als ze de link intypen zonder GPS te gebruiken)
-                console.log("Geen geldige sessie gevonden.");
+
+                // 2. Vul de naam van de locatie in op het scherm
+                document.getElementById('loc-display').innerText = locationName;
+
+                // 3. Zet de juiste Google Form link op de knop
+                document.getElementById('form-button').href = formLinks[locationName];
             }
         }
 
-        // Voer de check direct uit bij het laden
         window.onload = checkAccess;
     </script>
 </body>
