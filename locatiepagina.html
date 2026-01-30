@@ -4,22 +4,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Locatie Gevonden!</title>
     <style>
-        /* Styling voor de achtergrond en tekstkleuren */
-        body { background: #f4e4bc; font-family: 'Georgia', serif; text-align: center; padding: 30px; color: #5d2e0a; }
+        /* Basis styling voor de pagina in perkament-stijl */
+        body { background: #f4e4bc; font-family: 'Georgia', serif; text-align: center; padding: 20px; color: #5d2e0a; margin: 0; }
         
-        /* De container voor de inhoud */
-        .box { border: 3px double #5d2e0a; padding: 25px; display: inline-block; border-radius: 15px; background: rgba(255,255,255,0.3); max-width: 90%; }
-        
-        /* Algemene styling voor de knoppen */
-        .btn-link { display: inline-block; margin-top: 15px; padding: 15px 25px; color: white; text-decoration: none; border-radius: 10px; font-weight: bold; text-transform: uppercase; border: none; cursor: pointer; }
-        
-        /* Specifieke kleur voor de Google Form knop */
-        .btn-form { background: #800020; width: 80%; }
-        
-        /* Specifieke kleur voor de 'Terug naar Kaart' knop */
-        .btn-back { background: #444; width: 80%; font-size: 0.8em; }
+        /* De container voor de inhoud, passend bij de pop-ups van de kaart */
+        .box { 
+            border: 3px double #5d2e0a; 
+            padding: 25px; 
+            display: inline-block; 
+            border-radius: 15px; 
+            background: rgba(255,255,255,0.2); 
+            max-width: 85%; 
+            margin-top: 20px;
+        }
 
-        /* CSS klasse om elementen te verbergen die nog niet getoond mogen worden */
+        /* De knoppen-container: zorgt dat knoppen netjes onder elkaar staan */
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 25px;
+            align-items: center;
+        }
+        
+        /* Knoppen styling: EXACT overgenomen van de kaart.html styling */
+        .btn-custom { 
+            width: 100%;
+            max-width: 280px;
+            padding: 18px 5px; 
+            border: 2px solid #555; 
+            border-radius: 12px; 
+            font-weight: bold; 
+            font-size: 13px; 
+            background: #000; 
+            color: #fff; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6); 
+            cursor: pointer; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            text-decoration: none;
+            display: block;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Effect wanneer je op een knop drukt */
+        .btn-custom:active { 
+            background: #333; 
+            transform: translateY(2px); 
+        }
+
+        /* Specifieke kleur voor de hoofdknop (Open Raadsel) om hem op te laten vallen */
+        .btn-main {
+            background: #800020; /* Donkerrood, passend bij de gebieden op de kaart */
+            border-color: #400010;
+        }
+
+        /* Verberg elementen die pas na verificatie getoond mogen worden */
         .hidden { display: none; }
     </style>
 </head>
@@ -27,72 +67,64 @@
 
     <div id="denied-msg">
         <h1>Toegang Geweigerd!</h1>
-        <p>Je bent nog niet op de juiste plek geweest.</p>
-        <a href="kaart.html" class="btn-link" style="background: #000;">Terug naar de kaart</a>
+        <p>Je hebt deze locatie nog niet via de kaart geactiveerd.</p>
+        <div class="button-container">
+            <a href="kaart.html" class="btn-custom">Terug naar de kaart</a>
+        </div>
     </div>
 
     <div id="content" class="hidden">
         <div class="box">
             <h1>LOCATIE BEREIKT!</h1>
-            <p>Goed gedaan! Je bent nu bij:</p>
+            <p>Je bent op de juiste plek voor:</p>
             
-            <h2 id="loc-display">...</h2> 
+            <h2 id="loc-display" style="text-decoration: underline;">...</h2> 
 
-            <p>Klik op de knop hieronder om het raadsel op te lossen:</p>
-            
-            <a id="form-button" href="#" class="btn-link btn-form">Open Raadsel</a>
+            <div class="button-container">
+                <a id="form-button" href="#" class="btn-custom btn-main">🔓 Open Raadsel</a>
 
-            <br><br>
+                <a href="logboek.html" class="btn-custom">📖 Logboek bekijken</a>
 
-            <a href="kaart.html" class="btn-link btn-back">⬅ Terug naar de kaart</a>
+                <a href="kaart.html" class="btn-custom" style="background: #444;">🗺️ Terug naar kaart</a>
+            </div>
         </div>
     </div>
 
     <script>
-        // STAP 1: De database met links. 
-        // Zorg dat de naam (bijv. "De Vijver") EXACT hetzelfde is als in je kaart-bestand!
+        // LIJST MET LINKS: Koppel hier de locatienaam aan de juiste Google Form URL
         const formLinks = {
             "De Vijver": "https://forms.gle/link_voor_vijver",
             "Dwars": "https://forms.gle/link_voor_dwars",
-            "Locatie 3": "https://forms.gle/link_3",
-            "Locatie 4": "https://forms.gle/link_4",
-            "Locatie 5": "https://forms.gle/link_5"
-            // Je kunt hieronder makkelijk meer locaties toevoegen volgens hetzelfde patroon
+            "Locatie 3": "https://forms.gle/link3"
+            // Voeg hier je overige locaties toe (exacte naam gebruiken!)
         };
 
-        // STAP 2: De controlefunctie die direct start als de pagina laadt
+        // De controlefunctie die kijkt of de bezoeker eerlijk is doorgeklikt
         function checkAccess() {
-            // Haal de beveiligingstoken uit de URL (de ?auth=... van de vorige pagina)
+            // Haal gegevens uit de URL en de browser-sessie
             const urlParams = new URLSearchParams(window.location.search);
-            const hasToken = urlParams.has('auth');
-            
-            // Haal de opgeslagen gegevens uit het tijdelijke browsergeheugen (sessionStorage)
-            const sessionValid = sessionStorage.getItem('checkpointReached') === 'true';
-            const locationName = sessionStorage.getItem('locationName');
+            const hasToken = urlParams.has('auth'); // Checkt op ?auth=...
+            const sessionValid = sessionStorage.getItem('checkpointReached') === 'true'; // Checkt browsergeheugen
+            const locationName = sessionStorage.getItem('locationName'); // Haalt opgeslagen naam op
 
-            // STAP 3: Controleer of alles klopt
-            // We kijken of de URL een token heeft, de sessie geldig is én of de locatienaam in onze lijst staat
+            // Als alles klopt en de locatie bestaat in onze lijst:
             if (hasToken && sessionValid && formLinks[locationName]) {
                 
-                // Verberg de 'Toegang Geweigerd' melding
+                // Verberg de foutmelding
                 document.getElementById('denied-msg').classList.add('hidden');
                 
-                // Maak de echte inhoud zichtbaar
+                // Toon de box met knoppen
                 document.getElementById('content').classList.remove('hidden');
 
-                // Vul de naam van de gevonden locatie in de tekst in
+                // Zet de naam van de locatie in de titel
                 document.getElementById('loc-display').innerText = locationName;
 
                 // Koppel de juiste Google Form link aan de raadsel-knop
                 document.getElementById('form-button').href = formLinks[locationName];
-            } else {
-                // Als er iets niet klopt (bijv. handmatig de URL ingetikt), doen we niets.
-                // De 'denied-msg' blijft dan gewoon staan.
-                console.log("Verificatie mislukt of locatie onbekend.");
             }
         }
 
-        // Voer de bovenstaande functie uit zodra de pagina volledig is geladen
+        // Voer de check uit zodra de pagina geladen is
         window.onload = checkAccess;
     </script>
 </body>
