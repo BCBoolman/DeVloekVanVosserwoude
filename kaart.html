@@ -2,189 +2,156 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Interactieve Speurtocht Kaart</title>
-    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
+    
     <style>
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        #map { height: 100vh; width: 100vw; }
-
-        /* Bedieningsknoppen onderaan */
-        .controls { 
-            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); 
-            z-index: 1000; display: flex; gap: 10px; width: 90%; max-width: 400px; 
-        }
-        .btn { 
-            flex: 1; padding: 15px; background: #000; color: #fff; border: 2px solid #555; 
-            border-radius: 12px; font-weight: bold; text-align: center; cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4); text-transform: uppercase; font-size: 12px;
-        }
-        .btn-check { background: #800020; border-color: #400010; }
-
-        /* Info knop rechtsboven */
-        .btn-log { 
-            position: absolute; top: 20px; right: 20px; z-index: 1000; 
-            background: #fff; border: 2px solid #000; border-radius: 50%; 
-            width: 50px; height: 50px; display: flex; align-items: center; 
-            justify-content: center; font-size: 20px; text-decoration: none; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
-
-        /* Nummering op de kaart */
-        .area-number { 
-            background: none; border: none; color: white; font-weight: bold; 
-            font-size: 16px; text-shadow: 2px 2px 4px #000; 
-        }
-
-        #status-msg { 
-            position: absolute; top: 80px; left: 50%; transform: translateX(-50%); 
-            z-index: 1001; background: rgba(255,255,255,0.9); padding: 5px 15px; 
-            border-radius: 20px; font-size: 12px; display: none; border: 1px solid #ccc;
-        }
+        /* Basis styling */
+        body { margin: 0; padding: 0; overflow: hidden; font-family: 'Georgia', serif; background: #222; }
+        #map { height: 100vh; width: 100%; z-index: 1; }
+        
+        /* Kaart effecten */
+        .leaflet-tile-container { filter: sepia(0.8) brightness(0.8) contrast(1.2); }
+        .area-number { font-size: 20px; font-weight: bold; color: #000; text-align: center; text-shadow: 0px 0px 3px rgba(255,255,255,0.5); }
+        
+        /* Perkament overlay */
+        #map-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; background-image: url('https://www.transparenttextures.com/patterns/parchment.png'); background-color: rgba(101, 67, 33, 0.2); mix-blend-mode: multiply; box-shadow: inset 0 0 200px rgba(0,0,0,0.8), inset 0 0 100px rgba(0,0,0,0.9); }
+        
+        /* Knoppen onderaan */
+        .controls { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; gap: 10px; width: 95%; pointer-events: none; }
+        button { flex: 1; padding: 18px 5px; border: 2px solid #555; border-radius: 12px; font-weight: bold; font-size: 13px; background: #000; color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.6); pointer-events: auto; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; -webkit-tap-highlight-color: transparent; }
+        button:active { background: #333; transform: translateY(2px); }
+        
+        /* Info knop en Modal */
+        .btn-info { position: fixed; top: 15px; right: 15px; z-index: 10001; width: 40px; height: 40px; border-radius: 50%; background: #000; color: #fff; border: 2px solid #555; font-weight: bold; font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .modal { display: none; position: fixed; z-index: 10002; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); backdrop-filter: blur(5px); }
+        .modal-content { background-color: #f4e4bc; margin: 15% auto; padding: 25px; border-radius: 15px; width: 80%; max-width: 400px; box-shadow: 0 5px 30px rgba(0,0,0,0.5); border: 3px double #5d2e0a; text-align: center; color: #5d2e0a; }
+        
+        /* Status melding */
+        #status-msg { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); z-index: 10000; background: #000; color: white; padding: 8px 15px; border-radius: 10px; font-size: 13px; display: none; border: 1px solid #555; }
+        
+        /* Popups */
+        .leaflet-popup-content-wrapper { background: #f4e4bc; color: #5d2e0a; border: 2px solid #800020; font-family: 'Georgia', serif; }
+        .leaflet-popup-tip { background: #800020; }
     </style>
 </head>
 <body>
 
-    <div id="status-msg">GPS signaal zoeken...</div>
-    <a href="logboek.html" class="btn-log">📖</a>
+<div id="status-msg">Locatie zoeken...</div>
+<div id="map-overlay"></div>
+<div class="btn-info" onclick="toggleModal(true)">?</div>
 
-    <div id="map"></div>
-
-    <div class="controls">
-        <div class="btn" onclick="startGps()">🛰️ Start GPS</div>
-        <div class="btn btn-check" onclick="checkCheckpoint()">🔓 Check Locatie</div>
+<div id="infoModal" class="modal">
+    <div class="modal-content">
+        <h2>HET GEHEIM</h2>
+        <p>Ga naar de genummerde gebieden en los de raadsels op!</p>
+        <button style="width:100%" onclick="toggleModal(false)">SLUITEN</button>
     </div>
+</div>
 
-    <script>
-        // --- CONFIGURATIE ---
-        const scriptURL = 'JOUW_APPS_SCRIPT_URL_HIER'; // VERVANG DIT DOOR JE WEB APP URL
+<div id="map"></div>
+
+<div class="controls">
+  <button onclick="startGps()">📍 GPS</button>
+  <button onclick="checkCheckpoint()">✅ CHECK</button>
+  <button onclick="window.location.href='logboek.html'">🏆 LOGBOEK</button>
+</div>
+
+<script>
+    // CONFIG
+    const scriptURL = 'JOUW_APPS_SCRIPT_URL_HIER'; // PLAK HIER JE URL
+    
+    // Teamnaam beheer
+    let teamnaam = localStorage.getItem('teamnaam') || prompt("Wat is jullie teamnaam?");
+    if (teamnaam) localStorage.setItem('teamnaam', teamnaam);
+
+    const areas = [
+       {
+          name: "De Vijver",
+          riddle: "loop naar de visplek op de brug",
+          coords: [[52.1667, 4.5260], [52.1681, 4.5293], [52.1666, 4.5303], [52.1665, 4.5287], [52.1661, 4.5276]],
+          targetLat: 52.16695,
+          targetLon: 4.52805
+        },
+        {
+          name: "Dwars",
+          riddle: "kruispunt van de y",
+          coords: [[52.1689, 4.5353], [52.1678, 4.5374], [52.1678, 4.5345]],
+          targetLat: 52.16853,
+          targetLon: 4.53587
+        }
+    ];
+
+    function toggleModal(show) {
+        document.getElementById('infoModal').style.display = show ? 'block' : 'none';
+    }
+
+    // Initialiseer kaart
+    var map = L.map('map', { zoomControl: false }).setView([52.1678, 4.5338], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    const polygonLayers = {};
+
+    // Teken gebieden
+    areas.forEach((area, index) => {
+        var polygon = L.polygon(area.coords, { 
+            color: '#800020', 
+            fillColor: '#800020', 
+            fillOpacity: 0.5, 
+            weight: 3 
+        }).addTo(map);
+
+        polygonLayers[area.name] = polygon;
+        polygon.bindPopup(`<b>Gebied ${index + 1}: ${area.name}</b><br><br>${area.riddle}`);
         
-        // 1. Teamnaam beheer
-        let teamnaam = localStorage.getItem('teamnaam');
-        if (!teamnaam) {
-            teamnaam = prompt("Welkom! Wat is jullie teamnaam?");
-            if (teamnaam) {
-                localStorage.setItem('teamnaam', teamnaam);
-            } else {
-                teamnaam = "Anoniem Team";
-            }
-        }
+        var center = polygon.getBounds().getCenter();
+        var numberIcon = L.divIcon({ className: 'area-number', html: index + 1, iconSize: [30, 30], iconAnchor: [15, 10] });
+        L.marker(center, { icon: numberIcon, interactive: false }).addTo(map);
+    });
 
-        // 2. De Locaties (Zorg dat 'name' exact matcht met je Google Sheet!)
-        const areas = [
-            {
-                name: "De Vijver",
-                riddle: "Loop naar de visplek op de brug.",
-                coords: [[52.1667, 4.5260], [52.1681, 4.5293], [52.1666, 4.5303], [52.1665, 4.5287]],
-                targetLat: 52.16695,
-                targetLon: 4.52805,
-                url: "locatiepagina.html"
-            },
-            {
-                name: "Dwars",
-                riddle: "Kruispunt van de Y-splitsing.",
-                coords: [[52.1689, 4.5353], [52.1678, 4.5374], [52.1678, 4.5345]],
-                targetLat: 52.16853,
-                targetLon: 4.53587,
-                url: "locatiepagina.html"
-            }
-        ];
-
-        // --- KAART INITIALISATIE ---
-        var map = L.map('map', { zoomControl: false }).setView([52.1678, 4.5338], 15);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
-        const polygonLayers = {};
-
-        // Gebieden tekenen
-        areas.forEach((area, index) => {
-            var polygon = L.polygon(area.coords, { 
-                color: '#800020', 
-                fillColor: '#800020', 
-                fillOpacity: 0.4, 
-                weight: 3 
-            }).addTo(map);
-
-            polygonLayers[area.name] = polygon;
-            polygon.bindPopup(`<b>Locatie ${index + 1}: ${area.name}</b><br>${area.riddle}`);
-            
-            var center = polygon.getBounds().getCenter();
-            L.marker(center, { 
-                icon: L.divIcon({ className: 'area-number', html: index + 1 }), 
-                interactive: false 
-            }).addTo(map);
-        });
-
-        // --- DATA SYNCHRONISATIE ---
-        async function loadProgress() {
-            try {
-                const response = await fetch(`${scriptURL}?teamnaam=${encodeURIComponent(teamnaam)}`);
-                const voltooideNamen = await response.json();
-
-                voltooideNamen.forEach(naam => {
-                    if (polygonLayers[naam]) {
-                        polygonLayers[naam].setStyle({
-                            color: '#2ecc71',
-                            fillColor: '#2ecc71',
-                            fillOpacity: 0.6
-                        });
-                    }
-                });
-            } catch (error) {
-                console.log("Kon voortgang niet laden. Geen probleem, we gaan door.");
-            }
-        }
-
-        loadProgress();
-
-        // --- GPS LOGICA ---
-        var userLat, userLon, userMarker;
-
-        function startGps() {
-            document.getElementById('status-msg').style.display = 'block';
-            if (!navigator.geolocation) { alert("GPS niet ondersteund"); return; }
-            
-            navigator.geolocation.watchPosition((pos) => {
-                document.getElementById('status-msg').style.display = 'none';
-                userLat = pos.coords.latitude;
-                userLon = pos.coords.longitude;
-                
-                if (userMarker) {
-                    userMarker.setLatLng([userLat, userLon]);
-                } else {
-                    userMarker = L.circleMarker([userLat, userLon], { 
-                        radius: 10, color: '#fff', weight: 4, fillColor: '#3498db', fillOpacity: 1 
-                    }).addTo(map);
-                    map.flyTo([userLat, userLon], 17);
-                }
-            }, (err) => { alert("GPS Fout: " + err.message); }, { enableHighAccuracy: true });
-        }
-
-        function getDistance(lat1, lon1, lat2, lon2) {
-            var R = 6371000;
-            var dLat = (lat2-lat1) * Math.PI/180;
-            var dLon = (lon2-lon1) * Math.PI/180;
-            var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-        }
-
-        function checkCheckpoint() {
-            if (!userLat) { alert("Zet eerst je GPS aan!"); return; }
-            
-            let found = false;
-            areas.forEach(area => {
-                const distance = getDistance(userLat, userLon, area.targetLat, area.targetLon);
-                if (distance <= 30) { // 30 meter marge
-                    found = true;
-                    sessionStorage.setItem('locationName', area.name);
-                    sessionStorage.setItem('checkpointReached', 'true');
-                    window.location.href = area.url;
+    // Haal voortgang op
+    async function loadProgress() {
+        try {
+            const response = await fetch(`${scriptURL}?teamnaam=${encodeURIComponent(teamnaam)}`);
+            const voltooideLocaties = await response.json();
+            voltooideLocaties.forEach(naam => {
+                if (polygonLayers[naam]) {
+                    polygonLayers[naam].setStyle({ color: '#27ae60', fillColor: '#27ae60' });
                 }
             });
-            
-            if (!found) alert("Je bent nog niet dichtbij genoeg bij een van de locaties (loop tot binnen de 30 meter).");
-        }
-    </script>
+        } catch (e) { console.log("Nog geen voortgang."); }
+    }
+    loadProgress();
+
+    // GPS Logica
+    var userLat, userLon, userMarker;
+
+    function startGps() {
+        document.getElementById('status-msg').style.display = 'block';
+        navigator.geolocation.watchPosition(pos => {
+            document.getElementById('status-msg').style.display = 'none';
+            userLat = pos.coords.latitude;
+            userLon = pos.coords.longitude;
+            if (userMarker) userMarker.setLatLng([userLat, userLon]);
+            else userMarker = L.circleMarker([userLat, userLon], {radius: 8, color: '#fff', fillColor: '#3498db', fillOpacity: 1}).addTo(map);
+        }, err => alert("GPS Fout"), { enableHighAccuracy: true });
+    }
+
+    function checkCheckpoint() {
+        if (!userLat) return alert("Zet eerst GPS aan!");
+        let found = false;
+        areas.forEach(area => {
+            let dist = map.distance([userLat, userLon], [area.targetLat, area.targetLon]);
+            if (dist < 35) {
+                found = true;
+                sessionStorage.setItem('locationName', area.name);
+                sessionStorage.setItem('checkpointReached', 'true');
+                window.location.href = 'locatiepagina.html';
+            }
+        });
+        if (!found) alert("Je bent niet in een gebied!");
+    }
+</script>
+
 </body>
 </html>
