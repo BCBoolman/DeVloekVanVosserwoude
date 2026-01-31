@@ -2,68 +2,106 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Het Logboek</title>
+    <title>Het Logboek & Ranking</title>
     <style>
-        /* (Houd de styling van het vorige antwoord aan) */
-        body { margin: 0; padding: 20px; background: #222; font-family: 'Georgia', serif; color: #5d2e0a; display: flex; flex-direction: column; align-items: center; }
-        #paper-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background-image: url('https://www.transparenttextures.com/patterns/parchment.png'); background-color: #f4e4bc; box-shadow: inset 0 0 100px rgba(0,0,0,0.5); }
-        h1 { text-transform: uppercase; letter-spacing: 2px; }
-        .sheet-container { width: 100%; max-width: 900px; height: 60vh; border: 3px double #5d2e0a; border-radius: 10px; background: white; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative; }
-        iframe { width: 100%; height: 100%; border: none; }
-        .controls { display: flex; flex-direction: column; gap: 12px; width: 90%; max-width: 300px; margin-top: 25px; }
-        .btn-custom { padding: 18px 5px; border: 2px solid #555; border-radius: 12px; font-weight: bold; font-size: 13px; background: #000; color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.6); cursor: pointer; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; text-align: center; }
-        .btn-alt { background: #800020; border-color: #400010; }
-
-        /* Kleine indicator die laat zien dat de data ververst wordt */
-        #refresh-status { font-size: 10px; color: #888; margin-top: 5px; font-style: italic; }
+        body { background: #f4e4bc; font-family: 'Georgia', serif; text-align: center; padding: 20px; color: #5d2e0a; margin: 0; }
+        .box { border: 3px double #5d2e0a; padding: 20px; display: inline-block; border-radius: 15px; background: rgba(255,255,255,0.2); width: 90%; max-width: 500px; margin-top: 10px; }
+        
+        h2 { border-bottom: 2px solid #5d2e0a; padding-bottom: 5px; text-transform: uppercase; }
+        
+        /* Tabel styling */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: rgba(255,255,255,0.3); }
+        th, td { border: 1px solid #5d2e0a; padding: 10px; font-size: 14px; }
+        th { background: #5d2e0a; color: #f4e4bc; }
+        
+        /* Kleuren voor status */
+        .status-win { color: #27ae60; font-weight: bold; }
+        .status-wait { color: #e67e22; font-style: italic; }
+        
+        .btn-back { display: block; margin: 20px auto; padding: 15px; width: 80%; background: #000; color: #fff; border-radius: 12px; text-decoration: none; font-weight: bold; text-transform: uppercase; }
+        
+        .highlight { background: #f1c40f33; font-weight: bold; } /* Markering voor eigen team */
+        
+        #loading { font-style: italic; color: #888; }
     </style>
 </head>
 <body>
 
-    <div id="paper-overlay"></div>
+    <div class="box">
+        <h1>🏆 LOGBOEK</h1>
+        <p>Team: <strong id="team-display">...</strong></p>
 
-    <h1>📖 Logboek</h1>
-    <p>Data wordt elke 30 seconden automatisch vernieuwd.</p>
+        <h2>Jullie Voortgang</h2>
+        <div id="loading">Gegevens ophalen uit de archieven...</div>
+        <table id="personal-table">
+            <thead>
+                <tr>
+                    <th>Locatie</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="personal-body"></tbody>
+        </table>
 
-    <div class="sheet-container">
-        <iframe id="logboek-frame" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTXXXXXXXXX/pubhtml?widget=true&amp;headers=false"></iframe>
-    </div>
-    <div id="refresh-status">Volgende update over: <span id="timer">30</span>s</div>
+        <br>
 
-    <div class="controls">
-        <a href="locatiepagina.html" class="btn-custom btn-alt">📍 Terug naar Locatie</a>
-        <a href="kaart.html" class="btn-custom">🗺️ Naar de Kaart</a>
+        <h2>Ranglijst</h2>
+        <table id="leaderboard-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Team</th>
+                    <th>Score</th>
+                </tr>
+            </thead>
+            <tbody id="leaderboard-body"></tbody>
+        </table>
+
+        <a href="kaart.html" class="btn-back">🗺️ Terug naar de kaart</a>
     </div>
 
     <script>
-        // --- REFRESH LOGICA ---
+        const scriptURL = 'JOUW_APPS_SCRIPT_URL_HIER'; // PLAK HIER JE WEB APP URL
+        const teamnaam = localStorage.getItem('teamnaam') || "Anoniem";
+        document.getElementById('team-display').innerText = teamnaam;
 
-        const refreshInterval = 30000; // 30 seconden in milliseconden
-        let timeLeft = 30;
+        async function loadLogs() {
+            try {
+                // We hergebruiken de doGet in het script, maar vragen om uitgebreide data
+                const response = await fetch(`${scriptURL}?action=getFullLogs`);
+                const data = await response.json(); 
+                // We verwachten: { personal: [...], leaderboard: [...] }
 
-        function refreshIframe() {
-            // Pak de iframe op basis van zijn ID
-            const frame = document.getElementById('logboek-frame');
-            
-            // Door de 'src' opnieuw toe te wijzen, dwingen we de browser de Sheet opnieuw te laden
-            frame.src = frame.src; 
-            
-            // Reset de timer op het scherm
-            timeLeft = 30;
-            console.log("Logboek ververst!");
+                document.getElementById('loading').style.display = 'none';
+
+                // 1. Vul Persoonlijke Tabel
+                const pBody = document.getElementById('personal-body');
+                data.personal.forEach(item => {
+                    pBody.innerHTML += `<tr>
+                        <td>${item.locatie}</td>
+                        <td class="status-win">Voltooid ✅</td>
+                    </tr>`;
+                });
+                if(data.personal.length === 0) pBody.innerHTML = "<tr><td colspan='2'>Nog geen locaties bezocht.</td></tr>";
+
+                // 2. Vul Leaderboard
+                const lBody = document.getElementById('leaderboard-body');
+                data.leaderboard.forEach((entry, index) => {
+                    const isOwnTeam = entry.team === teamnaam ? 'class="highlight"' : '';
+                    lBody.innerHTML += `<tr ${isOwnTeam}>
+                        <td>${index + 1}</td>
+                        <td>${entry.team}</td>
+                        <td>${entry.score}</td>
+                    </tr>`;
+                });
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('loading').innerText = "Fout bij laden van gegevens.";
+            }
         }
 
-        // Countdown timer functie voor de visuele weergave
-        setInterval(() => {
-            timeLeft--;
-            if (timeLeft <= 0) {
-                refreshIframe();
-            }
-            document.getElementById('timer').innerText = timeLeft;
-        }, 1000); // Elke seconde de timer bijwerken
-
-        // Start de automatische refresh cycle
-        // setInterval(refreshIframe, refreshInterval);
+        window.onload = loadLogs;
     </script>
 </body>
 </html>
