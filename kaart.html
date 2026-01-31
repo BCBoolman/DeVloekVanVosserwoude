@@ -12,23 +12,42 @@
         
         /* Kaart effecten */
         .leaflet-tile-container { filter: sepia(0.8) brightness(0.8) contrast(1.2); }
-        .area-number { font-size: 20px; font-weight: bold; color: #000; text-align: center; text-shadow: 0px 0px 3px rgba(255,255,255,0.5); }
+        .area-number { font-size: 20px; font-weight: bold; color: #000; text-align: center; text-shadow: 0px 0px 3px rgba(255,255,255,0.5); font-family: 'Georgia', serif; }
         
         /* Perkament overlay */
         #map-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; background-image: url('https://www.transparenttextures.com/patterns/parchment.png'); background-color: rgba(101, 67, 33, 0.2); mix-blend-mode: multiply; box-shadow: inset 0 0 200px rgba(0,0,0,0.8), inset 0 0 100px rgba(0,0,0,0.9); }
         
         /* Knoppen onderaan */
         .controls { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; gap: 10px; width: 95%; pointer-events: none; }
-        button { flex: 1; padding: 18px 5px; border: 2px solid #555; border-radius: 12px; font-weight: bold; font-size: 13px; background: #000; color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.6); pointer-events: auto; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; -webkit-tap-highlight-color: transparent; }
+        
+        button { 
+            flex: 1; 
+            padding: 18px 5px; 
+            border: 2px solid #555; 
+            border-radius: 12px; 
+            font-weight: bold; 
+            font-size: 13px; 
+            background: #000; 
+            color: #fff; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6); 
+            pointer-events: auto; 
+            cursor: pointer; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Georgia', serif; /* Aangepast font */
+        }
+        
         button:active { background: #333; transform: translateY(2px); }
         
         /* Info knop en Modal */
-        .btn-info { position: fixed; top: 15px; right: 15px; z-index: 10001; width: 40px; height: 40px; border-radius: 50%; background: #000; color: #fff; border: 2px solid #555; font-weight: bold; font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .btn-info { position: fixed; top: 15px; right: 15px; z-index: 10001; width: 40px; height: 40px; border-radius: 50%; background: #000; color: #fff; border: 2px solid #555; font-weight: bold; font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-family: 'Georgia', serif; }
+        
         .modal { display: none; position: fixed; z-index: 10002; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); backdrop-filter: blur(5px); }
         .modal-content { background-color: #f4e4bc; margin: 15% auto; padding: 25px; border-radius: 15px; width: 80%; max-width: 400px; box-shadow: 0 5px 30px rgba(0,0,0,0.5); border: 3px double #5d2e0a; text-align: center; color: #5d2e0a; }
         
         /* Status melding */
-        #status-msg { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); z-index: 10000; background: #000; color: white; padding: 8px 15px; border-radius: 10px; font-size: 13px; display: none; border: 1px solid #555; }
+        #status-msg { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); z-index: 10000; background: #000; color: white; padding: 8px 15px; border-radius: 10px; font-size: 13px; display: none; border: 1px solid #555; font-family: 'Georgia', serif; }
         
         /* Popups */
         .leaflet-popup-content-wrapper { background: #f4e4bc; color: #5d2e0a; border: 2px solid #800020; font-family: 'Georgia', serif; }
@@ -58,13 +77,21 @@
 </div>
 
 <script>
-    // CONFIG
-    const scriptURL = 'JOUW_APPS_SCRIPT_URL_HIER'; // PLAK HIER JE URL
+    // --- CONFIGURATIE ---
+    const scriptURL = 'JOUW_APPS_SCRIPT_URL_HIER'; // VERVANG DIT DOOR JE WEB APP URL
     
-    // Teamnaam beheer
-    let teamnaam = localStorage.getItem('teamnaam') || prompt("Wat is jullie teamnaam?");
-    if (teamnaam) localStorage.setItem('teamnaam', teamnaam);
+    // 1. Teamnaam beheer
+    let teamnaam = localStorage.getItem('teamnaam');
+    if (!teamnaam) {
+        teamnaam = prompt("Welkom! Wat is jullie teamnaam?");
+        if (teamnaam) {
+            localStorage.setItem('teamnaam', teamnaam);
+        } else {
+            teamnaam = "Anoniem Team";
+        }
+    }
 
+    // 2. De Locaties (Zorg dat 'name' exact matcht met je Google Sheet!)
     const areas = [
        {
           name: "De Vijver",
@@ -86,13 +113,13 @@
         document.getElementById('infoModal').style.display = show ? 'block' : 'none';
     }
 
-    // Initialiseer kaart
+    // --- KAART INITIALISATIE ---
     var map = L.map('map', { zoomControl: false }).setView([52.1678, 4.5338], 15);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
     const polygonLayers = {};
 
-    // Teken gebieden
+    // Gebieden tekenen
     areas.forEach((area, index) => {
         var polygon = L.polygon(area.coords, { 
             color: '#800020', 
@@ -105,53 +132,76 @@
         polygon.bindPopup(`<b>Gebied ${index + 1}: ${area.name}</b><br><br>${area.riddle}`);
         
         var center = polygon.getBounds().getCenter();
-        var numberIcon = L.divIcon({ className: 'area-number', html: index + 1, iconSize: [30, 30], iconAnchor: [15, 10] });
+        var numberIcon = L.divIcon({ 
+            className: 'area-number', 
+            html: index + 1, 
+            iconSize: [30, 30], 
+            iconAnchor: [15, 10] 
+        });
         L.marker(center, { icon: numberIcon, interactive: false }).addTo(map);
     });
 
-    // Haal voortgang op
+    // --- DATA SYNCHRONISATIE ---
     async function loadProgress() {
         try {
             const response = await fetch(`${scriptURL}?teamnaam=${encodeURIComponent(teamnaam)}`);
             const voltooideLocaties = await response.json();
+
             voltooideLocaties.forEach(naam => {
                 if (polygonLayers[naam]) {
-                    polygonLayers[naam].setStyle({ color: '#27ae60', fillColor: '#27ae60' });
+                    polygonLayers[naam].setStyle({
+                        color: '#27ae60',
+                        fillColor: '#27ae60',
+                        fillOpacity: 0.6
+                    });
                 }
             });
-        } catch (e) { console.log("Nog geen voortgang."); }
+        } catch (error) {
+            console.log("Kon voortgang niet laden.");
+        }
     }
+
     loadProgress();
 
-    // GPS Logica
+    // --- GPS LOGICA ---
     var userLat, userLon, userMarker;
 
     function startGps() {
         document.getElementById('status-msg').style.display = 'block';
-        navigator.geolocation.watchPosition(pos => {
+        if (!navigator.geolocation) { alert("GPS niet ondersteund"); return; }
+        
+        navigator.geolocation.watchPosition((pos) => {
             document.getElementById('status-msg').style.display = 'none';
             userLat = pos.coords.latitude;
             userLon = pos.coords.longitude;
-            if (userMarker) userMarker.setLatLng([userLat, userLon]);
-            else userMarker = L.circleMarker([userLat, userLon], {radius: 8, color: '#fff', fillColor: '#3498db', fillOpacity: 1}).addTo(map);
-        }, err => alert("GPS Fout"), { enableHighAccuracy: true });
+            
+            if (userMarker) {
+                userMarker.setLatLng([userLat, userLon]);
+            } else {
+                userMarker = L.circleMarker([userLat, userLon], { 
+                    radius: 8, color: '#fff', weight: 4, fillColor: '#3498db', fillOpacity: 1 
+                }).addTo(map);
+                map.flyTo([userLat, userLon], 17);
+            }
+        }, (err) => { console.log("GPS Wachten..."); }, { enableHighAccuracy: true });
     }
 
     function checkCheckpoint() {
-        if (!userLat) return alert("Zet eerst GPS aan!");
+        if (!userLat) { alert("Zet eerst je GPS aan!"); return; }
+        
         let found = false;
         areas.forEach(area => {
-            let dist = map.distance([userLat, userLon], [area.targetLat, area.targetLon]);
-            if (dist < 35) {
+            const distance = map.distance([userLat, userLon], [area.targetLat, area.targetLon]);
+            if (distance <= 35) { // 35 meter marge
                 found = true;
                 sessionStorage.setItem('locationName', area.name);
                 sessionStorage.setItem('checkpointReached', 'true');
                 window.location.href = 'locatiepagina.html';
             }
         });
-        if (!found) alert("Je bent niet in een gebied!");
+        
+        if (!found) alert("Je bent nog niet in een gebied!");
     }
 </script>
-
 </body>
 </html>
