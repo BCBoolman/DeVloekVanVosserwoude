@@ -1,51 +1,18 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  
-  <style>
-    /* Basis styling */
-    body { margin: 0; padding: 0; overflow: hidden; font-family: 'Georgia', serif; background: #222; }
-    #map { height: 100vh; width: 100%; z-index: 1; }
-    .leaflet-tile-container { filter: sepia(0.8) brightness(0.8) contrast(1.2); }
-    .area-number { font-size: 20px; font-weight: bold; color: #000; text-align: center; text-shadow: 0px 0px 3px rgba(255,255,255,0.5); }
-    #map-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; background-image: url('https://www.transparenttextures.com/patterns/parchment.png'); background-color: rgba(101, 67, 33, 0.2); mix-blend-mode: multiply; box-shadow: inset 0 0 200px rgba(0,0,0,0.8), inset 0 0 100px rgba(0,0,0,0.9); }
-    .controls { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; gap: 10px; width: 95%; pointer-events: none; }
-    button { flex: 1; padding: 18px 5px; border: 2px solid #555; border-radius: 12px; font-weight: bold; font-size: 13px; background: #000; color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.6); pointer-events: auto; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; -webkit-tap-highlight-color: transparent; }
-    button:active { background: #333; transform: translateY(2px); }
-    .btn-info { position: fixed; top: 15px; right: 15px; z-index: 10001; width: 40px; height: 40px; border-radius: 50%; background: #000; color: #fff; border: 2px solid #555; font-weight: bold; font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-    .modal { display: none; position: fixed; z-index: 10002; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); backdrop-filter: blur(5px); }
-    .modal-content { background-color: #f4e4bc; margin: 15% auto; padding: 25px; border-radius: 15px; width: 80%; max-width: 400px; box-shadow: 0 5px 30px rgba(0,0,0,0.5); border: 3px double #5d2e0a; text-align: center; }
-    #status-msg { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); z-index: 10000; background: #000; color: white; padding: 8px 15px; border-radius: 10px; font-size: 13px; display: none; border: 1px solid #555; }
-    .leaflet-popup-content-wrapper { background: #f4e4bc; color: #5d2e0a; border: 2px solid #800020; font-family: 'Georgia', serif; }
-    .leaflet-popup-tip { background: #800020; }
-  </style>
-</head>
-<body>
-
-<div id="status-msg">Locatie zoeken...</div>
-<div id="map-overlay"></div>
-<div class="btn-info" onclick="toggleModal(true)">?</div>
-
-<div id="infoModal" class="modal">
-    <div class="modal-content">
-        <h2>HET GEHEIM</h2>
-        <p>Ga naar de genummerde gebieden en los de raadsels op!</p>
-        <button style="width:100%" onclick="toggleModal(false)">SLUITEN</button>
-    </div>
-</div>
-
-<div id="map"></div>
-<div class="controls">
-  <button onclick="startGps()">📍 GPS</button>
-  <button onclick="checkCheckpoint()">✅ CHECK</button>
-  <button onclick="window.location.href='logboek.html'">🏆 LOGBOEK</button>
-</div>
-
 <script>
-  // LIJST MET GEBIEDEN: Definieer hier je locaties
+  // --- CONFIGURATIE ---
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbxKDyxAn1z-SftTsCAl5LikS5HTueRCWb7i5s9RWR_gh63rOvvyKczu6vyuNq1ir7L6/exec'; 
+  
+  // 1. Teamnaam beheer
+  let teamnaam = localStorage.getItem('teamnaam');
+  if (!teamnaam) {
+    teamnaam = prompt("Wat is jullie teamnaam?");
+    if (teamnaam) {
+      localStorage.setItem('teamnaam', teamnaam);
+    } else {
+      teamnaam = "Anoniem Team"; // Fallback
+    }
+  }
+
   const areas = [
    {
       name: "De Vijver",
@@ -53,7 +20,7 @@
       coords: [[52.1667, 4.5260], [52.1681, 4.5293], [52.1666, 4.5303], [52.1665, 4.5287], [52.1661, 4.5276]],
       targetLat: 52.16695,
       targetLon: 4.52805,
-      url: "locatiepagina.html" // De pagina waar de controle plaatsvindt
+      url: "locatiepagina.html"
     },
     {
       name: "Dwars",
@@ -65,26 +32,56 @@
     }
   ];
 
-  function toggleModal(show) {
-      document.getElementById('infoModal').style.display = show ? 'block' : 'none';
-  }
-
   // Initialiseer kaart
   var map = L.map('map', { zoomControl: false }).setView([52.1678, 4.5338], 15);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-  // Teken gebieden en nummers
+  // Opslag voor de polygonen om ze later makkelijk te kunnen kleuren
+  const polygonLayers = {};
+
+  // Teken gebieden
   areas.forEach((area, index) => {
-    var polygon = L.polygon(area.coords, { color: '#800020', fillColor: '#800020', fillOpacity: 0.5, weight: 3 }).addTo(map);
+    var polygon = L.polygon(area.coords, { 
+        color: '#800020', 
+        fillColor: '#800020', 
+        fillOpacity: 0.5, 
+        weight: 3 
+    }).addTo(map);
+
+    // Koppel de naam aan de laag voor de kleur-update
+    polygonLayers[area.name] = polygon;
+
     polygon.bindPopup(`<b>Gebied ${index + 1}: ${area.name}</b><br><br>${area.riddle}`);
     var center = polygon.getBounds().getCenter();
     var numberIcon = L.divIcon({ className: 'area-number', html: index + 1, iconSize: [30, 30], iconAnchor: [15, 10] });
     L.marker(center, { icon: numberIcon, interactive: false }).addTo(map);
   });
 
+  // FUNCTIE: Haal voortgang op uit Google Sheets
+  async function loadProgress() {
+    try {
+      const response = await fetch(`${scriptURL}?teamnaam=${encodeURIComponent(teamnaam)}`);
+      const voltooideNamen = await response.json(); // Verwacht array: ["De Vijver", ...]
+
+      voltooideNamen.forEach(naam => {
+        if (polygonLayers[naam]) {
+          polygonLayers[naam].setStyle({
+            color: '#2ecc71',   // Groen
+            fillColor: '#2ecc71'
+          });
+        }
+      });
+    } catch (error) {
+      console.error("Voortgang kon niet worden geladen:", error);
+    }
+  }
+
+  // Roep voortgang aan bij opstarten
+  loadProgress();
+
+  // --- GPS LOGICA ---
   var userLat, userLon, userMarker;
 
-  // Start GPS tracking
   function startGps() {
     const status = document.getElementById('status-msg');
     status.style.display = 'block';
@@ -102,7 +99,6 @@
     }, (err) => { alert("GPS Fout: " + err.message); }, { enableHighAccuracy: true });
   }
 
-  // Afstandsberekening
   function getDistance(lat1, lon1, lat2, lon2) {
     var R = 6371000;
     var dLat = (lat2-lat1) * Math.PI/180;
@@ -111,34 +107,26 @@
     return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
   }
 
-  // --- NIEUWE LOGICA VOOR DE CHECK KNOP ---
   function checkCheckpoint() {
     if (!userLat) { alert("Activeer eerst de GPS."); return; }
     
     let found = false;
     areas.forEach(area => {
-      // Controleer of gebruiker binnen 20 meter is
       if (getDistance(userLat, userLon, area.targetLat, area.targetLon) <= 20) {
         found = true;
-
-        // STAP 1: Sla een bewijs op in de browser-sessie (onzichtbaar voor gebruiker)
-        sessionStorage.setItem('checkpointReached', 'true');
+        // Opslaan welke locatie we nu gaan bezoeken
         sessionStorage.setItem('locationName', area.name);
-
-        // STAP 2: Voeg een 'token' toe aan de URL als extra beveiliging
-        const securityToken = "GPS_" + btoa(area.name).substring(0, 8); // Een simpele code op basis van locatienaam
-        const destination = area.url + "?auth=" + securityToken;
-
-        // STAP 3: Ga naar de volgende pagina
-        window.location.href = destination;
+        window.location.href = area.url;
       }
     });
     
-    if (!found) alert("Nog niet op de juiste plek!");
+    if (!found) alert("Nog niet op de juiste plek voor een van de opdrachten!");
+  }
+
+  function toggleModal(show) {
+      document.getElementById('infoModal').style.display = show ? 'block' : 'none';
   }
 
   L.DomEvent.disableClickPropagation(document.querySelector('.controls'));
   L.DomEvent.disableClickPropagation(document.querySelector('.btn-info'));
 </script>
-</body>
-</html>
