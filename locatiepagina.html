@@ -4,70 +4,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Locatie Gevonden!</title>
     <style>
-        /* Basis styling voor de pagina in perkament-stijl */
         body { background: #f4e4bc; font-family: 'Georgia', serif; text-align: center; padding: 20px; color: #5d2e0a; margin: 0; }
+        .box { border: 3px double #5d2e0a; padding: 25px; display: inline-block; border-radius: 15px; background: rgba(255,255,255,0.2); max-width: 85%; margin-top: 20px; }
+        .button-container { display: flex; flex-direction: column; gap: 12px; margin-top: 25px; align-items: center; }
         
-        /* De container voor de inhoud, passend bij de pop-ups van de kaart */
-        .box { 
-            border: 3px double #5d2e0a; 
-            padding: 25px; 
-            display: inline-block; 
-            border-radius: 15px; 
-            background: rgba(255,255,255,0.2); 
-            max-width: 85%; 
-            margin-top: 20px;
-        }
+        .btn-custom { width: 100%; max-width: 280px; padding: 18px 5px; border: 2px solid #555; border-radius: 12px; font-weight: bold; font-size: 13px; background: #000; color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.6); cursor: pointer; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; display: block; -webkit-tap-highlight-color: transparent; }
+        .btn-custom:active { background: #333; transform: translateY(2px); }
+        .btn-custom:disabled { background: #888; cursor: not-allowed; opacity: 0.6; }
 
-        /* De knoppen-container: zorgt dat knoppen netjes onder elkaar staan */
-        .button-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-top: 25px;
-            align-items: center;
-        }
-        
-        /* Knoppen styling: EXACT overgenomen van de kaart.html styling */
-        .btn-custom { 
-            width: 100%;
-            max-width: 280px;
-            padding: 18px 5px; 
-            border: 2px solid #555; 
-            border-radius: 12px; 
-            font-weight: bold; 
-            font-size: 13px; 
-            background: #000; 
-            color: #fff; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.6); 
-            cursor: pointer; 
-            text-transform: uppercase; 
-            letter-spacing: 1px; 
-            text-decoration: none;
-            display: block;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* Effect wanneer je op een knop drukt */
-        .btn-custom:active { 
-            background: #333; 
-            transform: translateY(2px); 
-        }
-
-        /* Specifieke kleur voor de hoofdknop (Open Raadsel) om hem op te laten vallen */
-        .btn-main {
-            background: #800020; /* Donkerrood, passend bij de gebieden op de kaart */
-            border-color: #400010;
-        }
-
-        /* Verberg elementen die pas na verificatie getoond mogen worden */
+        .btn-main { background: #800020; border-color: #400010; }
         .hidden { display: none; }
+
+        input[type="text"] { width: 100%; max-width: 260px; padding: 15px; border-radius: 10px; border: 2px solid #5d2e0a; margin-bottom: 15px; font-size: 16px; text-align: center; background: #fffdf5; }
+        #timer-msg { color: #800020; font-weight: bold; margin-top: 10px; font-size: 14px; }
     </style>
 </head>
 <body>
 
     <div id="denied-msg">
         <h1>Toegang Geweigerd!</h1>
-        <p>Je hebt deze locatie nog niet via de kaart geactiveerd.</p>
+        <p>Je hebt deze locatie nog niet via de kaart geactiveerd of je bent niet dichtbij genoeg.</p>
         <div class="button-container">
             <a href="kaart.html" class="btn-custom">Terug naar de kaart</a>
         </div>
@@ -76,55 +32,88 @@
     <div id="content" class="hidden">
         <div class="box">
             <h1>LOCATIE BEREIKT!</h1>
-            <p>Je bent op de juiste plek voor:</p>
-            
             <h2 id="loc-display" style="text-decoration: underline;">...</h2> 
 
-            <div class="button-container">
-                <a id="form-button" href="#" class="btn-custom btn-main">🔓 Open Raadsel</a>
+            <div id="input-section">
+                <p>Wat is het antwoord op het raadsel?</p>
+                <input type="text" id="answer-input" placeholder="Typ hier je antwoord...">
+                
+                <div class="button-container">
+                    <button id="submit-btn" onclick="sendAnswer()" class="btn-custom btn-main">Antwoord Controleren</button>
+                    <div id="timer-msg"></div>
+                    <a href="kaart.html" class="btn-custom" style="background: #444;">🗺️ Terug naar kaart</a>
+                </div>
+            </div>
 
-                <a href="logboek.html" class="btn-custom">📖 Logboek bekijken</a>
-
-                <a href="kaart.html" class="btn-custom" style="background: #444;">🗺️ Terug naar kaart</a>
+            <div id="success-section" class="hidden">
+                <h2 style="color: green;">✓ CORRECT!</h2>
+                <p>Het gebied op de kaart is nu groen gemarkeerd.</p>
+                <div class="button-container">
+                    <a href="kaart.html" class="btn-custom">Volgende Locatie</a>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // LIJST MET LINKS: Koppel hier de locatienaam aan de juiste Google Form URL
-        const formLinks = {
-            "De Vijver": "https://forms.gle/link_voor_vijver",
-            "Dwars": "https://forms.gle/link_voor_dwars",
-            "Locatie 3": "https://forms.gle/link3"
-            // Voeg hier je overige locaties toe (exacte naam gebruiken!)
-        };
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbxKDyxAn1z-SftTsCAl5LikS5HTueRCWb7i5s9RWR_gh63rOvvyKczu6vyuNq1ir7L6/exec'; // PLAK HIER JE WEB APP URL
 
-        // De controlefunctie die kijkt of de bezoeker eerlijk is doorgeklikt
         function checkAccess() {
-            // Haal gegevens uit de URL en de browser-sessie
-            const urlParams = new URLSearchParams(window.location.search);
-            const hasToken = urlParams.has('auth'); // Checkt op ?auth=...
-            const sessionValid = sessionStorage.getItem('checkpointReached') === 'true'; // Checkt browsergeheugen
-            const locationName = sessionStorage.getItem('locationName'); // Haalt opgeslagen naam op
+            const locationName = sessionStorage.getItem('locationName');
+            const sessionValid = sessionStorage.getItem('checkpointReached') === 'true';
 
-            // Als alles klopt en de locatie bestaat in onze lijst:
-            if (hasToken && sessionValid && formLinks[locationName]) {
-                
-                // Verberg de foutmelding
+            if (sessionValid && locationName) {
                 document.getElementById('denied-msg').classList.add('hidden');
-                
-                // Toon de box met knoppen
                 document.getElementById('content').classList.remove('hidden');
-
-                // Zet de naam van de locatie in de titel
                 document.getElementById('loc-display').innerText = locationName;
-
-                // Koppel de juiste Google Form link aan de raadsel-knop
-                document.getElementById('form-button').href = formLinks[locationName];
             }
         }
 
-        // Voer de check uit zodra de pagina geladen is
+        async function sendAnswer() {
+            const btn = document.getElementById('submit-btn');
+            const timerMsg = document.getElementById('timer-msg');
+            const answer = document.getElementById('answer-input').value;
+            const locationId = sessionStorage.getItem('locationName');
+            const teamnaam = localStorage.getItem('teamnaam');
+
+            if (!answer) return alert("Vul eerst een antwoord in.");
+
+            btn.disabled = true;
+            btn.innerText = "Controleren...";
+            timerMsg.innerText = "";
+
+            try {
+                const response = await fetch(scriptURL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        teamnaam: teamnaam,
+                        locatieId: locationId,
+                        antwoord: answer
+                    })
+                });
+
+                const result = await response.text();
+
+                if (result === "CORRECT") {
+                    document.getElementById('input-section').classList.add('hidden');
+                    document.getElementById('success-section').classList.remove('hidden');
+                } else if (result.startsWith("WAIT")) {
+                    const minuten = result.split(":")[1];
+                    timerMsg.innerText = `❌ Te snel! Wacht nog ${minuten} min.`;
+                    btn.innerText = "Antwoord Controleren";
+                    btn.disabled = false;
+                } else {
+                    alert("Helaas, dat antwoord is fout! Je team is nu 10 minuten geblokkeerd voor deze locatie.");
+                    btn.innerText = "Antwoord Controleren";
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                alert("Er ging iets mis met de verbinding.");
+                btn.disabled = false;
+                btn.innerText = "Antwoord Controleren";
+            }
+        }
+
         window.onload = checkAccess;
     </script>
 </body>
