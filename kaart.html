@@ -142,26 +142,44 @@
     });
 
     // --- DATA SYNCHRONISATIE ---
-    async function loadProgress() {
-        try {
-            const response = await fetch(`${scriptURL}?teamnaam=${encodeURIComponent(teamnaam)}`);
-            const voltooideLocaties = await response.json();
+async function loadProgress() {
+    if (!teamnaam || scriptURL.includes('JOUW_APPS_SCRIPT_URL')) return;
 
-            voltooideLocaties.forEach(naam => {
-                if (polygonLayers[naam]) {
-                    polygonLayers[naam].setStyle({
-                        color: '#27ae60',
-                        fillColor: '#27ae60',
-                        fillOpacity: 0.6
-                    });
+    try {
+        // We voegen geen 'action' parameter toe, zodat het script 
+        // de simpele array van locatienamen teruggeeft.
+        const response = await fetch(`${scriptURL}?teamnaam=${encodeURIComponent(teamnaam)}`);
+        
+        if (!response.ok) throw new Error('Netwerkfout');
+        
+        const voltooideLocaties = await response.json();
+
+        // Debugging: zie in de console wat er binnenkomt
+        console.log("Voltooide locaties voor team:", voltooideLocaties);
+
+        voltooideLocaties.forEach(naam => {
+            if (polygonLayers[naam]) {
+                polygonLayers[naam].setStyle({
+                    color: '#27ae60',
+                    fillColor: '#27ae60',
+                    fillOpacity: 0.6
+                });
+                
+                // Voorkom dat de popup tekst oneindig herhaalt
+                const popup = polygonLayers[naam].getPopup();
+                if (popup && !popup.getContent().includes('✅')) {
+                    popup.setContent(popup.getContent() + "<br><br><b>✅ VOLTOOID</b>");
                 }
-            });
-        } catch (error) {
-            console.log("Kon voortgang niet laden.");
-        }
+            }
+        });
+    } catch (error) {
+        console.error("Voortgang kon niet worden opgehaald:", error);
     }
+}
 
-    loadProgress();
+// Zorg dat dit onderaan je script staat
+loadProgress(); // Direct laden
+setInterval(loadProgress, 15000); // Elke 15 seconden checken op updates van teamgenoten
 
     // --- GPS LOGICA ---
     var userLat, userLon, userMarker;
