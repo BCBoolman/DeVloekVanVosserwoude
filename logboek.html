@@ -1,101 +1,114 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Het Logboek & Ranking</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Logboek der Helden</title>
     <style>
-        body { background: #f4e4bc; font-family: 'Georgia', serif; text-align: center; padding: 20px; color: #5d2e0a; margin: 0; }
-        .box { border: 3px double #5d2e0a; padding: 20px; display: inline-block; border-radius: 15px; background: rgba(255,255,255,0.2); width: 95%; max-width: 500px; box-sizing: border-box; }
-        h1 { font-size: 24px; margin-bottom: 5px; }
-        h2 { border-bottom: 2px solid #5d2e0a; padding-bottom: 5px; text-transform: uppercase; font-size: 18px; margin-top: 25px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: rgba(255,255,255,0.3); }
-        th, td { border: 1px solid #5d2e0a; padding: 10px; font-size: 14px; }
-        th { background: #5d2e0a; color: #f4e4bc; }
-        .status-win { color: #27ae60; font-weight: bold; }
-        .btn-back { display: block; margin: 25px auto; padding: 15px; width: 80%; background: #000; color: #fff; border-radius: 12px; text-decoration: none; font-weight: bold; text-transform: uppercase; border: none; cursor: pointer; }
-        .highlight { background: rgba(241, 196, 15, 0.3); font-weight: bold; }
-        #loading { font-style: italic; color: #888; padding: 20px; }
+        body { 
+            margin: 0; padding: 20px; font-family: 'Georgia', serif; 
+            background: #222 url('https://www.transparenttextures.com/patterns/parchment.png');
+            color: #333; min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+        }
+
+        h1 { color: #800020; text-transform: uppercase; letter-spacing: 2px; text-align: center; margin-bottom: 10px; }
+        
+        .parchment-container {
+            background: #f4e4bc; padding: 20px; border-radius: 5px; border: 2px solid #5d2e0a;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.5); width: 100%; max-width: 400px; box-sizing: border-box;
+        }
+
+        .your-score {
+            text-align: center; border-bottom: 2px double #5d2e0a; margin-bottom: 20px; padding-bottom: 15px;
+        }
+
+        .your-score h2 { margin: 5px 0; font-size: 18px; color: #5d2e0a; }
+        .score-val { font-size: 32px; font-weight: bold; color: #800020; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { border-bottom: 1px solid #5d2e0a; padding: 10px; text-align: left; font-size: 14px; text-transform: uppercase; }
+        td { padding: 10px; border-bottom: 1px solid rgba(93, 46, 10, 0.2); font-size: 15px; }
+
+        .rank-1 { font-weight: bold; color: #d4af37; } /* Goud voor de winnaar */
+
+        .nav-buttons { margin-top: 30px; width: 100%; max-width: 400px; display: flex; gap: 10px; }
+        button { 
+            flex: 1; padding: 15px; border: 2px solid #555; border-radius: 12px; 
+            font-family: 'Georgia', serif; font-weight: bold; text-transform: uppercase;
+            background: #000; color: #fff; cursor: pointer;
+        }
+        .loading { text-align: center; font-style: italic; color: #5d2e0a; margin: 20px 0; }
     </style>
 </head>
 <body>
 
-    <div class="box">
-        <h1>🏆 LOGBOEK</h1>
-        <p>Team: <strong id="team-display">...</strong></p>
+    <h1>Logboek</h1>
 
-        <h2>Jullie Voortgang</h2>
-        <div id="loading">Gegevens ophalen uit de archieven...</div>
-        <table id="personal-table">
+    <div class="parchment-container">
+        <div class="your-score">
+            <h2>Team: <span id="displayTeamnaam">...</span></h2>
+            <div class="score-val" id="displayScore">0</div>
+            <div style="font-size: 12px; text-transform: uppercase;">Punten Verzameld</div>
+        </div>
+
+        <h3>Ranglijst der Jagers</h3>
+        <div id="loader" class="loading">Perkament wordt ontrold...</div>
+        <table id="leaderboard" style="display:none;">
             <thead>
                 <tr>
-                    <th>Locatie</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody id="personal-body"></tbody>
-        </table>
-
-        <h2>Ranglijst</h2>
-        <table id="leaderboard-table">
-            <thead>
-                <tr>
-                    <th>#</th>
+                    <th>Nr</th>
                     <th>Team</th>
-                    <th>Punten</th>
+                    <th>Score</th>
                 </tr>
             </thead>
-            <tbody id="leaderboard-body"></tbody>
+            <tbody id="leaderboardBody">
+                </tbody>
         </table>
+    </div>
 
-        <a href="kaart.html" class="btn-back">🗺️ Terug naar de kaart</a>
+    <div class="nav-buttons">
+        <button onclick="window.location.href='kaart.html'">Terug naar Kaart</button>
     </div>
 
     <script>
-        // VERVANG DEZE URL DOOR JOUW NIEUWE GOOGLE APPS SCRIPT URL
         const scriptURL = 'https://script.google.com/macros/s/AKfycbwYWZ4aGcML_gNu9CMVkDqM885GoV8FBcIP3c-eI5MOXtwr426azBr2TX90XO2s8xEs/exec';
-        const teamnaam = localStorage.getItem('teamnaam') || "Anoniem";
-        document.getElementById('team-display').innerText = teamnaam;
+        const teamnaam = localStorage.getItem('teamnaam') || "Onbekend";
 
-        async function loadLogs() {
+        document.getElementById('displayTeamnaam').innerText = teamnaam;
+
+        async function loadLeaderboard() {
             try {
-                const response = await fetch(`${scriptURL}?action=getFullLogs&teamnaam=${encodeURIComponent(teamnaam)}`);
-                const data = await response.json(); 
+                // We halen de data op. De server stuurt ook de scores van alle teams mee.
+                const response = await fetch(`${scriptURL}?getLeaderboard=true`);
+                const data = await response.json();
+                
+                const tbody = document.getElementById('leaderboardBody');
+                tbody.innerHTML = "";
 
-                document.getElementById('loading').style.display = 'none';
-
-                // 1. Vul Persoonlijke Tabel
-                const pBody = document.getElementById('personal-body');
-                pBody.innerHTML = "";
-                if(data.personal.length === 0) {
-                    pBody.innerHTML = "<tr><td colspan='2'>Nog geen locaties voltooid.</td></tr>";
-                } else {
-                    data.personal.forEach(item => {
-                        pBody.innerHTML += `<tr>
-                            <td>${item.locatie}</td>
-                            <td class="status-win">Voltooid ✅</td>
-                        </tr>`;
-                    });
+                // Zoek eigen score in de lijst
+                const myData = data.find(row => row.team.toLowerCase() === teamnaam.toLowerCase());
+                if (myData) {
+                    document.getElementById('displayScore').innerText = myData.score;
                 }
 
-                // 2. Vul Leaderboard
-                const lBody = document.getElementById('leaderboard-body');
-                lBody.innerHTML = "";
-                data.leaderboard.forEach((entry, index) => {
-                    const isOwnTeam = entry.team === teamnaam ? 'class="highlight"' : '';
-                    lBody.innerHTML += `<tr ${isOwnTeam}>
-                        <td>${index + 1}</td>
-                        <td>${entry.team}</td>
-                        <td>${entry.score}</td>
-                    </tr>`;
+                // Vul de tabel
+                data.forEach((entry, index) => {
+                    const row = tbody.insertRow();
+                    if(index === 0) row.className = "rank-1";
+                    
+                    row.insertCell(0).innerText = index + 1 + ".";
+                    row.insertCell(1).innerText = entry.team;
+                    row.insertCell(2).innerText = entry.score;
                 });
 
-            } catch (error) {
-                console.error(error);
-                document.getElementById('loading').innerText = "Fout bij laden van de archieven.";
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('leaderboard').style.display = 'table';
+
+            } catch (e) {
+                document.getElementById('loader').innerText = "Kon het logboek niet raadplegen...";
             }
         }
 
-        window.onload = loadLogs;
+        loadLeaderboard();
     </script>
 </body>
 </html>
