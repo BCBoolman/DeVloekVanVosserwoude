@@ -1,145 +1,108 @@
 <!DOCTYPE html>
-<html>
+<html lang="nl">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>De Vampier Van Vosserwoude</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>De Jacht: Aanmelden</title>
     <style>
-        /* Basisinstellingen */
         body { 
-            margin: 0; padding: 0; font-family: 'Georgia', serif; 
-            background: #222 url('https://www.transparenttextures.com/patterns/parchment.png');
-            height: 100vh; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            color: #fff;
-            box-shadow: inset 0 0 200px rgba(0,0,0,0.9);
-            overflow: hidden;
+            margin: 0; padding: 0; 
+            font-family: 'Georgia', serif; 
+            background: #1a1a1a; 
+            color: #f4e4bc; 
+            display: flex; justify-content: center; align-items: center; 
+            height: 100vh; overflow: hidden;
         }
 
-        .bg-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(101, 67, 33, 0.15);
-            mix-blend-mode: multiply; pointer-events: none; z-index: -1;
+        .login-card {
+            background: #2a2a2a;
+            padding: 40px 30px;
+            border-radius: 15px;
+            border: 2px solid #800020;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            text-align: center;
+            width: 85%;
+            max-width: 350px;
         }
 
-        .logo { 
-            width: 140px; height: 140px; margin-bottom: 20px; 
-            border-radius: 50%; border: 3px double #5d2e0a;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.7); 
-            filter: sepia(0.5) contrast(1.1);
+        h1 { color: #800020; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 3px; }
+        p { font-size: 14px; margin-bottom: 25px; line-height: 1.5; color: #aaa; }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid #5d2e0a;
+            background: #f4e4bc;
+            color: #333;
+            font-size: 18px;
+            font-family: 'Georgia', serif;
+            box-sizing: border-box;
+            text-align: center;
         }
 
-        h1 { 
-            margin-bottom: 20px; font-size: 26px; text-align: center;
-            text-transform: uppercase; letter-spacing: 2px;
-            color: #800020; 
-            text-shadow: 1px 1px 2px rgba(255,255,255,0.2), 2px 2px 8px rgba(0,0,0,0.8);
-            padding: 0 10px;
-        }
-        
-        /* Teamnaam input styling */
-        .input-group { width: 85%; max-width: 300px; margin-bottom: 25px; text-align: center; }
-        input[type="text"] { 
-            width: 100%; padding: 15px; border-radius: 10px; border: 2px solid #5d2e0a; 
-            background: rgba(244, 228, 188, 0.9); font-family: 'Georgia', serif;
-            font-size: 16px; text-align: center; color: #5d2e0a; box-sizing: border-box;
+        button {
+            width: 100%;
+            padding: 15px;
+            background: #800020;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
         }
 
-        .menu-buttons { display: flex; flex-direction: column; gap: 15px; width: 85%; max-width: 300px; }
-        
-        /* Knoppen met Georgia font */
-        button { 
-            padding: 18px; border: 2px solid #555; border-radius: 12px; 
-            font-family: 'Georgia', serif; /* Nu expliciet toegevoegd */
-            font-weight: bold; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;
-            cursor: pointer; transition: all 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            background: #000; color: #fff;
+        button:active {
+            background: #a00020;
+            transform: scale(0.98);
         }
 
-        button:active { transform: scale(0.95); background: #333; }
-        .btn-uitleg { border: 1px solid #444; color: #aaa; background: #111; font-size: 12px; }
-
-        /* Modal styling */
-        .modal { 
-            display: none; position: fixed; z-index: 10; left: 0; top: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
-        }
-
-        .modal-content { 
-            background-color: #f4e4bc; color: #333; margin: 10% auto; padding: 25px; 
-            border-radius: 15px; width: 80%; max-width: 350px; max-height: 75vh; 
-            overflow-y: auto; border: 3px double #5d2e0a; font-family: 'Georgia', serif;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8); text-align: left;
-        }
-
-        .modal-content h2 { border-bottom: 1px solid #5d2e0a; padding-bottom: 10px; color: #800020; text-align: center; font-size: 20px; }
-        .modal-content li { margin-bottom: 10px; font-size: 14px; line-height: 1.4; }
-        .btn-sluit { background: #000; color: white; width: 100%; margin-top: 15px; border: none; padding: 12px; }
+        .decoration { font-size: 24px; margin: 10px 0; color: #800020; }
     </style>
 </head>
 <body>
 
-    <div class="bg-overlay"></div>
-
-    <img src="images/logo.png" alt="Logo" class="logo"> 
+<div class="login-card">
+    <div class="decoration">🦇</div>
+    <h1>DE JACHT</h1>
+    <p>Voer de teamnaam in die door jullie leider is gekozen om de kaart te ontsluiten.</p>
     
-    <h1>De Vampier Van<br>Vosserwoude</h1>
+    <input type="text" id="teamInput" placeholder="TEAMNAAM..." autocomplete="off">
+    <button onclick="startSpel()">START DE JACHT</button>
+</div>
 
-    <div class="input-group">
-        <input type="text" id="teamInput" placeholder="Voer Teamnaam in..." maxlength="20">
-    </div>
-
-    <div class="menu-buttons">
-        <button onclick="startGame()">Start het Avontuur</button>
-        <button class="btn-uitleg" onclick="toggleModal(true)">Hoe werkt het?</button>
-    </div>
-
-    <div id="uitlegModal" class="modal">
-        <div class="modal-content">
-            <h2>📜 PERKAMENT DER REGELS</h2>
-            <p>Welkom, ontdekkingsreiziger. Volg deze stappen:</p>
-            <ol>
-                <li>Voer een unieke teamnaam in om je voortgang op te slaan.</li>
-                <li>Betreed de kaart en activeer je <strong>GPS</strong>.</li>
-                <li>Navigeer naar de bloeddruppels op de kaart.</li>
-                <li>Zodra je dichtbij genoeg bent (25m), verschijnt de opdracht.</li>
-                <li>Beantwoord de vraag correct om punten te verdienen voor de ranglijst.</li>
-            </ol>
-            <p><em>Pas op voor de schaduwen en let op het verkeer!</em></p>
-            <button class="btn-sluit" onclick="toggleModal(false)">IK BEGRIJP HET</button>
-        </div>
-    </div>
-
-    <script>
-        // Bij het laden: check of er al een teamnaam bekend is
-        window.onload = function() {
-            const savedName = localStorage.getItem('teamnaam');
-            if (savedName) {
-                document.getElementById('teamInput').value = savedName;
-            }
-        }
-
-        function startGame() {
-            const name = document.getElementById('teamInput').value.trim();
-            if (name.length < 3) {
-                alert("Kies een teamnaam van minstens 3 letters.");
-                return;
-            }
-            // Sla de teamnaam op voor de andere pagina's
-            localStorage.setItem('teamnaam', name);
-            window.location.href = 'kaart.html';
-        }
-
-        function toggleModal(show) {
-            document.getElementById('uitlegModal').style.display = show ? 'block' : 'none';
-        }
+<script>
+    function startSpel() {
+        const input = document.getElementById('teamInput').value;
         
-        window.onclick = function(event) {
-            let modal = document.getElementById('uitlegModal');
-            if (event.target == modal) toggleModal(false);
+        // --- DE FOUTBEVEILIGING ---
+        // 1. .trim() haalt spaties aan begin en eind weg
+        // 2. .toLowerCase() maakt alles kleine letters
+        const genormaliseerdeNaam = input.trim().toLowerCase();
+
+        if (genormaliseerdeNaam.length < 3) {
+            alert("Kies een teamnaam van minstens 3 tekens.");
+            return;
         }
-    </script>
+
+        // Sla de schone naam op in het geheugen van de telefoon
+        localStorage.setItem('teamnaam', genormaliseerdeNaam);
+
+        // Ga naar de kaart
+        window.location.href = 'kaart.html';
+    }
+
+    // Laat de speler ook op 'Enter' kunnen drukken
+    document.getElementById('teamInput').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            startSpel();
+        }
+    });
+</script>
+
 </body>
 </html>
