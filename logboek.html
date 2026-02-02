@@ -5,24 +5,16 @@
     <title>Het Logboek & Ranking</title>
     <style>
         body { background: #f4e4bc; font-family: 'Georgia', serif; text-align: center; padding: 20px; color: #5d2e0a; margin: 0; }
-        .box { border: 3px double #5d2e0a; padding: 20px; display: inline-block; border-radius: 15px; background: rgba(255,255,255,0.2); width: 90%; max-width: 500px; margin-top: 10px; }
-        
-        h2 { border-bottom: 2px solid #5d2e0a; padding-bottom: 5px; text-transform: uppercase; }
-        
-        /* Tabel styling */
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: rgba(255,255,255,0.3); }
+        .box { border: 3px double #5d2e0a; padding: 20px; display: inline-block; border-radius: 15px; background: rgba(255,255,255,0.2); width: 95%; max-width: 500px; box-sizing: border-box; }
+        h1 { font-size: 24px; margin-bottom: 5px; }
+        h2 { border-bottom: 2px solid #5d2e0a; padding-bottom: 5px; text-transform: uppercase; font-size: 18px; margin-top: 25px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: rgba(255,255,255,0.3); }
         th, td { border: 1px solid #5d2e0a; padding: 10px; font-size: 14px; }
         th { background: #5d2e0a; color: #f4e4bc; }
-        
-        /* Kleuren voor status */
         .status-win { color: #27ae60; font-weight: bold; }
-        .status-wait { color: #e67e22; font-style: italic; }
-        
-        .btn-back { display: block; margin: 20px auto; padding: 15px; width: 80%; background: #000; color: #fff; border-radius: 12px; text-decoration: none; font-weight: bold; text-transform: uppercase; }
-        
-        .highlight { background: #f1c40f33; font-weight: bold; } /* Markering voor eigen team */
-        
-        #loading { font-style: italic; color: #888; }
+        .btn-back { display: block; margin: 25px auto; padding: 15px; width: 80%; background: #000; color: #fff; border-radius: 12px; text-decoration: none; font-weight: bold; text-transform: uppercase; border: none; cursor: pointer; }
+        .highlight { background: rgba(241, 196, 15, 0.3); font-weight: bold; }
+        #loading { font-style: italic; color: #888; padding: 20px; }
     </style>
 </head>
 <body>
@@ -43,15 +35,13 @@
             <tbody id="personal-body"></tbody>
         </table>
 
-        <br>
-
         <h2>Ranglijst</h2>
         <table id="leaderboard-table">
             <thead>
                 <tr>
                     <th>#</th>
                     <th>Team</th>
-                    <th>Score</th>
+                    <th>Punten</th>
                 </tr>
             </thead>
             <tbody id="leaderboard-body"></tbody>
@@ -61,31 +51,35 @@
     </div>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbxvyXA8TKsdtMCXxbWf_RqEPEB_GE1U_qeiESiRkBCw-qgQSy_YpQCKig3MOAoHDEqS/exec'; // PLAK HIER JE WEB APP URL
+        // VERVANG DEZE URL DOOR JOUW NIEUWE GOOGLE APPS SCRIPT URL
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwYWZ4aGcML_gNu9CMVkDqM885GoV8FBcIP3c-eI5MOXtwr426azBr2TX90XO2s8xEs/exec';
         const teamnaam = localStorage.getItem('teamnaam') || "Anoniem";
         document.getElementById('team-display').innerText = teamnaam;
 
         async function loadLogs() {
             try {
-                // We hergebruiken de doGet in het script, maar vragen om uitgebreide data
-                const response = await fetch(`${scriptURL}?action=getFullLogs`);
+                const response = await fetch(`${scriptURL}?action=getFullLogs&teamnaam=${encodeURIComponent(teamnaam)}`);
                 const data = await response.json(); 
-                // We verwachten: { personal: [...], leaderboard: [...] }
 
                 document.getElementById('loading').style.display = 'none';
 
                 // 1. Vul Persoonlijke Tabel
                 const pBody = document.getElementById('personal-body');
-                data.personal.forEach(item => {
-                    pBody.innerHTML += `<tr>
-                        <td>${item.locatie}</td>
-                        <td class="status-win">Voltooid ✅</td>
-                    </tr>`;
-                });
-                if(data.personal.length === 0) pBody.innerHTML = "<tr><td colspan='2'>Nog geen locaties bezocht.</td></tr>";
+                pBody.innerHTML = "";
+                if(data.personal.length === 0) {
+                    pBody.innerHTML = "<tr><td colspan='2'>Nog geen locaties voltooid.</td></tr>";
+                } else {
+                    data.personal.forEach(item => {
+                        pBody.innerHTML += `<tr>
+                            <td>${item.locatie}</td>
+                            <td class="status-win">Voltooid ✅</td>
+                        </tr>`;
+                    });
+                }
 
                 // 2. Vul Leaderboard
                 const lBody = document.getElementById('leaderboard-body');
+                lBody.innerHTML = "";
                 data.leaderboard.forEach((entry, index) => {
                     const isOwnTeam = entry.team === teamnaam ? 'class="highlight"' : '';
                     lBody.innerHTML += `<tr ${isOwnTeam}>
@@ -97,7 +91,7 @@
 
             } catch (error) {
                 console.error(error);
-                document.getElementById('loading').innerText = "Fout bij laden van gegevens.";
+                document.getElementById('loading').innerText = "Fout bij laden van de archieven.";
             }
         }
 
