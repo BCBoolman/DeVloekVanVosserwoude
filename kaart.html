@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Mysterie Kaart</title>
+    <title>De Kaart der Mysteriën</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -42,7 +42,7 @@
         .btn-info { position: fixed; top: 15px; right: 15px; z-index: 10001; width: 40px; height: 40px; border-radius: 50%; background: #000; color: #fff; border: 2px solid #555; font-weight: bold; font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; pointer-events: auto; }
         
         .modal { display: none; position: fixed; z-index: 10002; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); backdrop-filter: blur(5px); }
-        .modal-content { background-color: #f4e4bc; margin: 15% auto; padding: 25px; border-radius: 15px; width: 80%; max-width: 400px; border: 3px double #5d2e0a; text-align: center; color: #5d2e0a; }
+        .modal-content { background-color: #f4e4bc; margin: 15% auto; padding: 25px; border-radius: 15px; width: 80%; max-width: 400px; border: 3px double #5d2e0a; text-align: center; color: #5d2e0a; font-family: 'Georgia', serif; }
 
         /* Status melding */
         #status-msg { position: fixed; top: 65px; left: 50%; transform: translateX(-50%); z-index: 10000; background: rgba(0,0,0,0.7); color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; display: none; }
@@ -57,8 +57,8 @@
 <div id="infoModal" class="modal">
     <div class="modal-content">
         <h2>HET GEHEIM</h2>
-        <p>Loop naar de gebieden op de kaart. Als je midden in een gebied staat, druk je op de <b>CHECK</b> knop om de bewoner te ontmoeten!</p>
-        <button style="width:100%; background: #5d2e0a;" onclick="toggleModal(false)">BEGREPEN</button>
+        <p>Navigeer naar de bordeauxrode gebieden. Als je op de juiste plek bent, druk je op de <b>CHECK</b> knop om de bewoner te ontmoeten!</p>
+        <button style="width:100%; background: #800020;" onclick="toggleModal(false)">BEGREPEN</button>
     </div>
 </div>
 
@@ -71,11 +71,16 @@
 </div>
 
 <script>
-    // VERVANG DEZE URL DOOR JOUW NIEUWE GOOGLE APPS SCRIPT URL
     const scriptURL = 'https://script.google.com/macros/s/AKfycbwYWZ4aGcML_gNu9CMVkDqM885GoV8FBcIP3c-eI5MOXtwr426azBr2TX90XO2s8xEs/exec';
     
-    let teamnaam = localStorage.getItem('teamnaam') || prompt("Wat is jullie teamnaam?");
-    if (teamnaam) localStorage.setItem('teamnaam', teamnaam);
+    // Teamnaam beheer: Haal op uit localStorage
+    let teamnaam = localStorage.getItem('teamnaam');
+
+    // Als er geen teamnaam is, stuur ze terug naar de index
+    if (!teamnaam || teamnaam.trim() === "") {
+        alert("Geen teamnaam gevonden. Meld je eerst aan.");
+        window.location.href = 'index.html';
+    }
 
     var map = L.map('map', { zoomControl: false }).setView([52.1678, 4.5338], 15);
     
@@ -97,7 +102,6 @@
             const response = await fetch(`${scriptURL}?teamnaam=${encodeURIComponent(teamnaam)}`);
             const data = await response.json();
             
-            // Teken of update polygonen uit de Sheet
             data.locaties.forEach((area, index) => {
                 if (!polygonLayers[area.name]) {
                     const poly = L.polygon(area.coords, { 
@@ -120,7 +124,7 @@
 
             areas = data.locaties;
 
-            // Kleur voltooide gebieden groen
+            // Kleur reeds voltooide gebieden groen
             data.voltooid.forEach(naam => {
                 if (polygonLayers[naam]) {
                     polygonLayers[naam].setStyle({ color: '#27ae60', fillColor: '#27ae60' });
@@ -154,34 +158,29 @@
     }
 
     function checkCheckpoint() {
-        if (!userLat) return alert("Klik eerst op de GPS knop!");
+        if (!userLat) return alert("Activeer eerst de 📍 GPS knop!");
         
-        // Zoek of de gebruiker dichtbij een 'TargetLat/Lon' uit de Sheet is
         const currentArea = areas.find(a => {
             const dist = map.distance([userLat, userLon], [a.targetLat, a.targetLon]);
-            return dist <= 40; // Gebruiker moet binnen 40 meter van het middelpunt staan
+            return dist <= 35; // Iets scherper gezet op 35 meter
         });
 
         if (currentArea) {
-            // Check of het gebied al groen is
             if (polygonLayers[currentArea.name].options.color === '#27ae60') {
                 alert("Jullie hebben dit raadsel al opgelost!");
             } else {
-                // Zet de sessie-gegevens klaar voor de locatiepagina
                 sessionStorage.setItem('locationName', currentArea.name);
                 sessionStorage.setItem('checkpointReached', 'true'); 
-                
-                // Navigeer naar de interactie-pagina
                 window.location.href = 'locatiepagina.html';
             }
         } else {
-            alert("Je bent nog niet op de juiste plek. Kijk goed naar de gemarkeerde gebieden!");
+            alert("Je bent nog niet op de juiste plek. Loop naar het middelpunt van een bordeauxrood gebied!");
         }
     }
 
     // Start synchronisatie
     updateData();
-    setInterval(updateData, 15000); // Elke 15 seconden checken op updates uit de Sheet
+    setInterval(updateData, 15000); 
 </script>
 </body>
 </html>
