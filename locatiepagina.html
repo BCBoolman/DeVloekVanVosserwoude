@@ -12,8 +12,7 @@
         .btn-main { background: #800020; border-color: #400010; }
         .hidden { display: none; }
         input[type="text"] { width: 100%; max-width: 260px; padding: 15px; border-radius: 10px; border: 2px solid #5d2e0a; font-size: 16px; text-align: center; }
-        #timer-msg { color: #800020; font-weight: bold; margin-top: 10px; }
-        #uitleg-tekst { font-style: italic; margin-top: 15px; display: block; }
+        #timer-msg { color: #800020; font-weight: bold; margin-top: 10px; padding: 10px; border: 1px dashed #800020; border-radius: 8px; display: none; }
     </style>
 </head>
 <body>
@@ -31,10 +30,13 @@
 
             <div id="input-section">
                 <p id="vraag-tekst">Gegevens ophalen...</p>
-                <input type="text" id="answer-input" placeholder="Typ je antwoord...">
+                <div id="timer-msg"></div> <div id="form-controls">
+                    <input type="text" id="answer-input" placeholder="Typ je antwoord...">
+                    <div class="button-container">
+                        <button id="submit-btn" onclick="sendAnswer()" class="btn-custom btn-main">Antwoord Controleren</button>
+                    </div>
+                </div>
                 <div class="button-container">
-                    <button id="submit-btn" onclick="sendAnswer()" class="btn-custom btn-main">Antwoord Controleren</button>
-                    <div id="timer-msg"></div>
                     <a href="kaart.html" class="btn-custom" style="background: #444;">🗺️ Terug naar kaart</a>
                 </div>
             </div>
@@ -50,14 +52,14 @@
     </div>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbwrDhv0DvIqU-z3yqc-UGHu6CKxbuN2r22J7Bsn18goYKno1yj6mpl8NdFSuHQiNfqw/exec';
+        // VERVANG DEZE URL DOOR JE EIGEN GOOGLE APPS SCRIPT URL
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbw17lDaT0QUhx8XGvVHtNPQUs4CEAlsP5CrhRGPAERSZteRzyEP2-AQvGvqhO5gsduN/exec';
         let locatieUitleg = "";
 
         async function checkAccess() {
             const locName = sessionStorage.getItem('locationName');
             const teamnaam = localStorage.getItem('teamnaam');
 
-            // Veiligheid: als er geen teamnaam is, stuur terug naar de start
             if (!teamnaam) {
                 alert("Meld je eerst aan met een teamnaam.");
                 window.location.href = 'index.html';
@@ -73,19 +75,26 @@
                     const res = await fetch(`${scriptURL}?getDetails=${encodeURIComponent(locName)}&teamnaam=${encodeURIComponent(teamnaam)}`);
                     const data = await res.json();
                     
-                    document.getElementById('char-foto').src = data.foto || 'images/default-char.png';
+                    document.getElementById('char-foto').src = data.foto || 'https://via.placeholder.com/120';
                     document.getElementById('vraag-tekst').innerText = data.vraag;
                     locatieUitleg = data.uitleg;
+
+                    // CHECK OP BLOKKADE
+                    if (data.blokkade > 0) {
+                        document.getElementById('form-controls').classList.add('hidden');
+                        const msg = document.getElementById('timer-msg');
+                        msg.style.display = 'block';
+                        msg.innerText = `❌ Deze locatie is geblokkeerd door een fout antwoord. Probeer het over ${data.blokkade} minuten opnieuw.`;
+                    }
                 } catch (error) {
                     console.error(error);
-                    document.getElementById('vraag-tekst').innerText = "Kon de vraag niet laden. Controleer je internetverbinding.";
+                    document.getElementById('vraag-tekst').innerText = "Fout bij ophalen gegevens. Check je verbinding.";
                 }
             }
         }
 
         async function sendAnswer() {
             const btn = document.getElementById('submit-btn');
-            const timerMsg = document.getElementById('timer-msg');
             const answer = document.getElementById('answer-input').value.trim();
             const locationId = sessionStorage.getItem('locationName');
             const teamnaam = localStorage.getItem('teamnaam');
@@ -112,16 +121,15 @@
                     document.getElementById('success-section').classList.remove('hidden');
                 } else if (result.startsWith("WAIT")) {
                     const min = result.split(":")[1];
-                    timerMsg.innerText = `❌ Te snel! Wacht nog ${min} minuten voor deze locatie.`;
-                    btn.disabled = false;
-                    btn.innerText = "Antwoord Controleren";
+                    alert(`Nog even geduld! Je moet nog ${min} minuten wachten.`);
+                    location.reload();
                 } else {
-                    alert("Helaas! Dat is niet het juiste antwoord. Je bent nu 10 minuten geblokkeerd voor deze locatie.");
-                    location.reload(); // Herlaad om de WAIT-timer te tonen
+                    alert("Helaas! Dat is niet het juiste antwoord. Deze locatie is nu 10 minuten geblokkeerd.");
+                    location.reload(); 
                 }
             } catch (error) {
                 console.error(error);
-                alert("Er ging iets mis bij het verzenden. Probeer het opnieuw.");
+                alert("Verbindingsfout.");
                 btn.disabled = false;
                 btn.innerText = "Antwoord Controleren";
             }
