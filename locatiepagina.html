@@ -6,38 +6,32 @@
     <style>
         body { background: #f4e4bc; font-family: 'Georgia', serif; text-align: center; padding: 20px; color: #5d2e0a; margin: 0; }
         .box { border: 3px double #5d2e0a; padding: 25px; display: inline-block; border-radius: 15px; background: rgba(255,255,255,0.2); max-width: 85%; margin-top: 20px; }
+        .char-img { width: 120px; height: 120px; border-radius: 50%; border: 4px solid #5d2e0a; object-fit: cover; margin-bottom: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
         .button-container { display: flex; flex-direction: column; gap: 12px; margin-top: 25px; align-items: center; }
-        
-        .btn-custom { width: 100%; max-width: 280px; padding: 18px 5px; border: 2px solid #555; border-radius: 12px; font-weight: bold; font-size: 13px; background: #000; color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.6); cursor: pointer; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; display: block; -webkit-tap-highlight-color: transparent; }
-        .btn-custom:active { background: #333; transform: translateY(2px); }
-        .btn-custom:disabled { background: #888; cursor: not-allowed; opacity: 0.6; }
-
+        .btn-custom { width: 100%; max-width: 280px; padding: 18px 5px; border: 2px solid #555; border-radius: 12px; font-weight: bold; font-size: 13px; background: #000; color: #fff; cursor: pointer; text-transform: uppercase; text-decoration: none; display: block; }
         .btn-main { background: #800020; border-color: #400010; }
         .hidden { display: none; }
-
-        input[type="text"] { width: 100%; max-width: 260px; padding: 15px; border-radius: 10px; border: 2px solid #5d2e0a; margin-bottom: 15px; font-size: 16px; text-align: center; background: #fffdf5; }
-        #timer-msg { color: #800020; font-weight: bold; margin-top: 10px; font-size: 14px; }
+        input[type="text"] { width: 100%; max-width: 260px; padding: 15px; border-radius: 10px; border: 2px solid #5d2e0a; font-size: 16px; text-align: center; }
+        #timer-msg { color: #800020; font-weight: bold; margin-top: 10px; }
+        #uitleg-tekst { font-style: italic; margin-top: 15px; }
     </style>
 </head>
 <body>
 
     <div id="denied-msg">
         <h1>Toegang Geweigerd!</h1>
-        <p>Je hebt deze locatie nog niet via de kaart geactiveerd of je bent niet dichtbij genoeg.</p>
-        <div class="button-container">
-            <a href="kaart.html" class="btn-custom">Terug naar de kaart</a>
-        </div>
+        <p>Activeer deze locatie eerst via de kaart.</p>
+        <a href="kaart.html" class="btn-custom" style="margin: 0 auto;">Terug naar de kaart</a>
     </div>
 
     <div id="content" class="hidden">
+        <img id="char-foto" src="" class="char-img" alt="Karakter">
         <div class="box">
-            <h1>LOCATIE BEREIKT!</h1>
-            <h2 id="loc-display" style="text-decoration: underline;">...</h2> 
+            <h2 id="loc-display">...</h2> 
 
             <div id="input-section">
-                <p>Wat is het antwoord op het raadsel?</p>
-                <input type="text" id="answer-input" placeholder="Typ hier je antwoord...">
-                
+                <p id="vraag-tekst">Laden...</p>
+                <input type="text" id="answer-input" placeholder="Antwoord...">
                 <div class="button-container">
                     <button id="submit-btn" onclick="sendAnswer()" class="btn-custom btn-main">Antwoord Controleren</button>
                     <div id="timer-msg"></div>
@@ -47,7 +41,7 @@
 
             <div id="success-section" class="hidden">
                 <h2 style="color: green;">✓ CORRECT!</h2>
-                <p>Het gebied op de kaart is nu groen gemarkeerd.</p>
+                <p id="uitleg-tekst"></p>
                 <div class="button-container">
                     <a href="kaart.html" class="btn-custom">Volgende Locatie</a>
                 </div>
@@ -56,16 +50,23 @@
     </div>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbxvyXA8TKsdtMCXxbWf_RqEPEB_GE1U_qeiESiRkBCw-qgQSy_YpQCKig3MOAoHDEqS/exec'; // PLAK HIER JE WEB APP URL
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbxvyXA8TKsdtMCXxbWf_RqEPEB_GE1U_qeiESiRkBCw-qgQSy_YpQCKig3MOAoHDEqS/exec';
+        let locatieUitleg = "";
 
-        function checkAccess() {
-            const locationName = sessionStorage.getItem('locationName');
-            const sessionValid = sessionStorage.getItem('checkpointReached') === 'true';
-
-            if (sessionValid && locationName) {
+        async function checkAccess() {
+            const locName = sessionStorage.getItem('locationName');
+            if (sessionStorage.getItem('checkpointReached') === 'true' && locName) {
                 document.getElementById('denied-msg').classList.add('hidden');
                 document.getElementById('content').classList.remove('hidden');
-                document.getElementById('loc-display').innerText = locationName;
+                document.getElementById('loc-display').innerText = locName;
+                
+                // Haal specifieke details op (Foto, Vraag, Uitleg)
+                const res = await fetch(`${scriptURL}?getDetails=${encodeURIComponent(locName)}`);
+                const data = await res.json();
+                
+                document.getElementById('char-foto').src = data.foto; // bijv: images/visser.png
+                document.getElementById('vraag-tekst').innerText = data.vraag;
+                locatieUitleg = data.uitleg;
             }
         }
 
@@ -76,41 +77,35 @@
             const locationId = sessionStorage.getItem('locationName');
             const teamnaam = localStorage.getItem('teamnaam');
 
-            if (!answer) return alert("Vul eerst een antwoord in.");
+            if (!answer) return alert("Vul een antwoord in.");
 
             btn.disabled = true;
             btn.innerText = "Controleren...";
-            timerMsg.innerText = "";
 
             try {
                 const response = await fetch(scriptURL, {
                     method: 'POST',
-                    body: JSON.stringify({
-                        teamnaam: teamnaam,
-                        locatieId: locationId,
-                        antwoord: answer
-                    })
+                    body: JSON.stringify({ teamnaam, locatieId, antwoord: answer })
                 });
 
                 const result = await response.text();
 
                 if (result === "CORRECT") {
                     document.getElementById('input-section').classList.add('hidden');
+                    document.getElementById('uitleg-tekst').innerText = locatieUitleg;
                     document.getElementById('success-section').classList.remove('hidden');
                 } else if (result.startsWith("WAIT")) {
-                    const minuten = result.split(":")[1];
-                    timerMsg.innerText = `❌ Te snel! Wacht nog ${minuten} min.`;
-                    btn.innerText = "Antwoord Controleren";
+                    const min = result.split(":")[1];
+                    timerMsg.innerText = `❌ Te snel! Wacht nog ${min} minuten voor deze locatie.`;
                     btn.disabled = false;
+                    btn.innerText = "Antwoord Controleren";
                 } else {
-                    alert("Helaas, dat antwoord is fout! Je team is nu 10 minuten geblokkeerd voor deze locatie.");
-                    btn.innerText = "Antwoord Controleren";
-                    btn.disabled = false;
+                    alert("Fout! Je moet nu 10 minuten wachten voor deze locatie.");
+                    location.reload(); // Herlaad om timer te triggeren
                 }
             } catch (error) {
-                alert("Er ging iets mis met de verbinding.");
+                alert("Verbindingsfout.");
                 btn.disabled = false;
-                btn.innerText = "Antwoord Controleren";
             }
         }
 
