@@ -2,139 +2,145 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>De Vloek Van Vosserwoude: Aanmelden</title>
     <style>
-        /* Basis styling voor de achtergrond en het font */
+        /* Basis styling overeenkomstig met de kaartpagina */
         body { 
             margin: 0; padding: 0; 
             font-family: 'Georgia', serif; 
-            background: #1a1a1a; 
+            background: #222; 
             color: #f4e4bc; 
             display: flex; justify-content: center; align-items: center; 
             height: 100vh; overflow: hidden;
-            flex-direction: column;
         }
 
-        /* Zorgt dat alle invoervelden en knoppen ook Georgia gebruiken */
-        input, button {
-            font-family: 'Georgia', serif;
+        /* Perkament overlay effect voor de sfeer van de kaart */
+        #map-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            z-index: -1; pointer-events: none; 
+            background-image: url('https://www.transparenttextures.com/patterns/parchment.png'); 
+            background-color: rgba(101, 67, 33, 0.1); 
+            mix-blend-mode: multiply; 
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.5); 
         }
 
+        /* De aanmeldkaart met de 'dubbele rand' stijl van de kaart-modal */
         .login-card {
             background: #2a2a2a;
             padding: 40px 30px;
             border-radius: 15px;
-            border: 2px solid #800020;
+            border: 3px double #800020; /* Overeenkomstig met de kaart modal */
             box-shadow: 0 0 30px rgba(0,0,0,0.8);
             text-align: center;
             width: 85%;
             max-width: 350px;
+            z-index: 2;
         }
 
-        h1 { color: #800020; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 3px; }
-        p { font-size: 14px; margin-bottom: 25px; line-height: 1.5; color: #aaa; }
+        h1 { color: #800020; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; font-size: 22px; }
+        p { font-size: 14px; margin-bottom: 25px; line-height: 1.5; color: #f4e4bc; }
 
+        /* Invoerveld styling */
         input[type="text"] {
             width: 100%;
             padding: 15px;
             margin-bottom: 20px;
-            border-radius: 8px;
-            border: 1px solid #5d2e0a;
-            background: #f4e4bc;
-            color: #333;
+            border-radius: 12px;
+            border: 2px solid #555;
+            background: #f4e4bc; /* Perkament kleur uit de modal */
+            color: #5d2e0a;
             font-size: 18px;
+            font-family: 'Georgia', serif;
             box-sizing: border-box;
             text-align: center;
+            font-weight: bold;
         }
 
-        /* Algemene styling voor beide knoppen voor gelijke grootte */
+        /* Knoppen styling exact zoals op de kaartpagina */
         .btn-large {
             width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px; /* Iets kleiner voor betere fit bij lange teksten */
+            padding: 18px 5px;
+            border: 2px solid #555;
+            border-radius: 12px;
             font-weight: bold;
+            font-size: 13px;
             text-transform: uppercase;
             cursor: pointer;
-            transition: 0.3s;
+            font-family: 'Georgia', serif;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
             margin-bottom: 15px;
-            display: block;
-            box-sizing: border-box;
+            transition: 0.3s;
         }
 
-        /* Specifieke kleuren voor de startknop */
+        /* Startknop: Bordeaux rood zoals de 'Check' knop */
         .start-btn {
             background: #800020;
             color: white;
         }
 
-        /* Specifieke kleuren voor de uitlegknop */
+        /* Uitlegknop: Zwart zoals de kaart controls */
         .uitleg-btn {
-            background: #000000;
-            color: #ffffff;
-            border: 1px solid #333; /* Subtiele rand voor definitie */
+            background: #000;
+            color: #fff;
         }
 
         .btn-large:active {
-            transform: scale(0.98);
-            opacity: 0.9;
+            transform: translateY(2px);
+            filter: brightness(0.8);
         }
 
         .game-icon {
-            width: 60px;
+            width: 70px;
             height: auto;
             margin-bottom: 15px;
+            filter: drop-shadow(0 0 5px rgba(128, 0, 32, 0.5));
         }
 
-        /* Styling voor de uitleg popup (modal) */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 10;
-            left: 0; top: 0;
-            width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.85);
+        /* Modal styling (popup) overgenomen van de kaart */
+        .modal { 
+            display: none; position: fixed; z-index: 10002; left: 0; top: 0; 
+            width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); 
+            backdrop-filter: blur(5px); 
         }
-
-        .modal-content {
-            background-color: #2a2a2a;
-            margin: 15% auto;
-            padding: 30px;
-            border: 2px solid #800020;
-            border-radius: 15px;
-            width: 80%;
-            max-width: 400px;
-            color: #f4e4bc;
-            text-align: center;
+        
+        .modal-content { 
+            background-color: #f4e4bc; margin: 15% auto; padding: 25px; 
+            border-radius: 15px; width: 80%; max-width: 400px; 
+            border: 3px double #5d2e0a; text-align: center; 
+            color: #5d2e0a; font-family: 'Georgia', serif; 
         }
     </style>
 </head>
 <body>
 
+<div id="map-overlay"></div>
+
 <div class="login-card">
-    <img src="images/placeholder.jpg" alt="Spel Icoon" class="game-icon">
+    <img src="images/placeholder.jpg" alt="Icoon" class="game-icon">
     
     <h1>DE VLOEK VAN VOSSERWOUDE</h1>
-    <p>Voer jullie gekozen teamnaam hier in. Let op dat dit op alle telefoons volledig hetzelfde is geschreven!</p>
+    <p>Voer jullie teamnaam in. Gebruik op elke telefoon exact dezelfde naam!</p>
     
     <input type="text" id="teamInput" placeholder="TEAMNAAM..." autocomplete="off">
     
     <button class="btn-large start-btn" onclick="startSpel()">START DE VOSSENJACHT</button>
-    <button class="btn-large uitleg-btn" onclick="openUitleg()">HOE WERKT HET SPEL?</button>
+    <button class="btn-large uitleg-btn" onclick="toggleModal(true)">HOE WERKT HET SPEL?</button>
 </div>
 
 <div id="uitlegModal" class="modal">
     <div class="modal-content">
         <h2>SPELUITLEG</h2>
-        <p>Blijf als team bij elkaar. Zoek de vossen in het bos en scan hun codes. Zorg dat iedereen exact dezelfde teamnaam gebruikt!</p>
-        <button class="btn-large start-btn" onclick="sluitUitleg()">BEGREPEN</button>
+        <p>Blijf als team bij elkaar. Zoek de vossen in het bos en scan hun codes via de kaart. Zorg dat iedereen exact dezelfde teamnaam gebruikt!</p>
+        <button class="btn-large start-btn" style="width:100%; margin-top:10px;" onclick="toggleModal(false)">BEGREPEN</button>
     </div>
 </div>
 
 <script>
-    // Functie voor het controleren en opslaan van de teamnaam
+    function toggleModal(show) {
+        document.getElementById('uitlegModal').style.display = show ? 'block' : 'none';
+    }
+
     function startSpel() {
         const input = document.getElementById('teamInput').value;
         const genormaliseerdeNaam = input.trim().toLowerCase();
@@ -148,16 +154,6 @@
         window.location.href = 'kaart.html';
     }
 
-    // Functies voor het tonen en verbergen van de modal
-    function openUitleg() {
-        document.getElementById('uitlegModal').style.display = "block";
-    }
-
-    function sluitUitleg() {
-        document.getElementById('uitlegModal').style.display = "none";
-    }
-
-    // Ondersteuning voor de Enter-toets in het tekstveld
     document.getElementById('teamInput').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
             startSpel();
