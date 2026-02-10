@@ -16,7 +16,6 @@
             flex-direction: column;
         }
 
-        /* Styling voor de centrale aanmeldkaart */
         .login-card {
             background: #2a2a2a;
             padding: 40px 30px;
@@ -31,7 +30,6 @@
         h1 { color: #800020; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 3px; }
         p { font-size: 14px; margin-bottom: 25px; line-height: 1.5; color: #aaa; }
 
-        /* Styling voor de invoervelden en knoppen */
         input[type="text"] {
             width: 100%;
             padding: 15px;
@@ -66,7 +64,6 @@
             transform: scale(0.98);
         }
 
-        /* De placeholder afbeelding styling */
         .game-icon {
             width: 60px;
             height: auto;
@@ -107,21 +104,17 @@
 <body>
 
 <div class="login-card">
-    // Spelicoon afbeelding
     <img src="images/placeholder.jpg" alt="Vleermuis" class="game-icon">
     
     <h1>DE VLOEK VAN VOSSERWOUDE</h1>
-    <p>Voer jullie gekozen teamnaam hier in. Let op dat op alle telefoons waarmee jullie binnen het team spelen dit volledig hetzelfde is geschreven!</p>
+    <p>Voer jullie gekozen teamnaam hier in. Let op dat dit op alle telefoons volledig hetzelfde is geschreven!</p>
     
-    // Invoerveld voor de teamnaam en de startknop
     <input type="text" id="teamInput" placeholder="TEAMNAAM..." autocomplete="off">
     <button onclick="startSpel()">START DE VOSSENJACHT</button>
     
-    // De nieuwe knop om de speluitleg te openen
     <button class="uitleg-btn" onclick="openUitleg()">SPELUITLEG</button>
 </div>
 
-// Het verborgen venster voor de speluitleg
 <div id="uitlegModal" class="modal">
     <div class="modal-content">
         <h2>HOE WERKT HET?</h2>
@@ -131,25 +124,24 @@
 </div>
 
 <script>
-    // Functie voor het verwerken van de teamnaam en het starten van het spel
+    // Functie voor het verwerken van de teamnaam
     function startSpel() {
         const input = document.getElementById('teamInput').value;
         
-        // De invoer wordt schoongemaakt (spaties weg, kleine letters) voor consistentie
+        // De invoer wordt genormaliseerd (spaties weg, kleine letters)
         const genormaliseerdeNaam = input.trim().toLowerCase();
 
-        // Controle of de naam lang genoeg is voordat er wordt doorgestuurd
         if (genormaliseerdeNaam.length < 3) {
             alert("Kies een teamnaam van minstens 3 tekens.");
             return;
         }
 
-        // De teamnaam wordt lokaal opgeslagen en de speler wordt naar de kaart gestuurd
+        // De teamnaam wordt opgeslagen en de speler gaat naar de kaart
         localStorage.setItem('teamnaam', genormaliseerdeNaam);
         window.location.href = 'kaart.html';
     }
 
-    // Functies voor het tonen en verbergen van de uitleg popup
+    // Functies voor de popup bediening
     function openUitleg() {
         document.getElementById('uitlegModal').style.display = "block";
     }
@@ -158,7 +150,7 @@
         document.getElementById('uitlegModal').style.display = "none";
     }
 
-    // Luistert naar de 'Enter' toets in het tekstveld om de startknop te activeren
+    // Enter-toets ondersteuning
     document.getElementById('teamInput').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
             startSpel();
