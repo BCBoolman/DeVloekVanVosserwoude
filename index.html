@@ -16,6 +16,11 @@
             flex-direction: column;
         }
 
+        /* Zorgt dat alle invoervelden en knoppen ook Georgia gebruiken */
+        input, button, select, textarea {
+            font-family: 'Georgia', serif;
+        }
+
         .login-card {
             background: #2a2a2a;
             padding: 40px 30px;
@@ -39,7 +44,6 @@
             background: #f4e4bc;
             color: #333;
             font-size: 18px;
-            font-family: 'Georgia', serif;
             box-sizing: border-box;
             text-align: center;
         }
@@ -89,6 +93,7 @@
             width: 80%;
             max-width: 400px;
             color: #f4e4bc;
+            font-family: 'Georgia', serif;
         }
 
         .uitleg-btn {
@@ -147,16 +152,4 @@
     }
 
     function sluitUitleg() {
-        document.getElementById('uitlegModal').style.display = "none";
-    }
-
-    // Enter-toets ondersteuning
-    document.getElementById('teamInput').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-            startSpel();
-        }
-    });
-</script>
-
-</body>
-</html>
+        document.getElementById('uitlegModal').style.display = "none
