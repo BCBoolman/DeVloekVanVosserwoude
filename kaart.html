@@ -50,14 +50,32 @@
         
         /* Modal Styling */
         .modal { display: none; position: fixed; z-index: 10002; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); backdrop-filter: blur(5px); }
+        
         .modal-content { 
-            background-color: #f4e4bc; margin: 15% auto; padding: 25px; 
-            border-radius: 15px; width: 85%; max-width: 400px; 
-            border: 3px double #5d2e0a; text-align: center; color: #5d2e0a; 
-            font-family: 'Georgia', serif; max-height: 70vh; overflow-y: auto;
+            background-color: #f4e4bc; 
+            margin: 8% auto; 
+            padding: 25px; 
+            border-radius: 15px; 
+            width: 90%; 
+            max-width: 450px; 
+            border: 3px double #5d2e0a; 
+            text-align: center; 
+            color: #5d2e0a; 
+            font-family: 'Georgia', serif; 
+            max-height: 82vh; 
+            overflow-y: auto; 
+            box-sizing: border-box;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
         }
-        .modal-content h2 { color: #800020; margin-top: 0; }
-        .modal-content p { line-height: 1.6; font-size: 15px; text-align: left; }
+
+        .modal-content h2 { color: #800020; margin-top: 0; font-size: 22px; letter-spacing: 1px; }
+        
+        .modal-content p { 
+            line-height: 1.6; 
+            font-size: 15px; 
+            text-align: left; 
+            margin-bottom: 15px; 
+        }
 
         /* Status melding */
         #status-msg { position: fixed; top: 75px; left: 50%; transform: translateX(-50%); z-index: 10000; background: rgba(0,0,0,0.7); color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; display: none; }
@@ -75,23 +93,27 @@
 
 <div id="infoModal" class="modal">
     <div class="modal-content">
-        <h2>BEKNOPTE UITLEG SPELBEDIENING</h2>
-        <p>Klik op een gebied om het raadsel te krijgen voor de exacte locatie van de vos. Als je op de juiste plek bent, druk je op de <b>CHECK</b> knop om de bewoner te ontmoeten!</p>
-        <button style="width:100%; background: #800020;" onclick="toggleInfoModal(false)">BEGREPEN</button>
+        <h2>BEKNOPTE UITLEG</h2>
+        <p>Klik op een gebied om het raadsel te krijgen voor de exacte locatie van de bewoner. Zet je <b>GPS</b> aan om je eigen positie op de kaart te zien, en zo tot de locatie van de Vos te komen. Als je op de juiste plek bent, druk je op de <b>CHECK</b> knop om hen te ondervragen! Volg je eigen voortgang én die van andere teams met <b>LOGBOEK</b></b></p>
+        <button style="width:100%; background: #800020; color: white; padding: 15px; border-radius: 10px; border: 2px solid #555;" onclick="toggleInfoModal(false)">BEGREPEN</button>
     </div>
 </div>
 
 <div id="storyModal" class="modal">
     <div class="modal-content">
         <h2>DE VLOEK VAN VOSSERWOUDE</h2>
-        <p>
-  Een jaar na de nachten van pure terreur, waarin de laatste weerwolven van Wakkerdam werden uitgeroeid, besloot een groep overlevenden het vervloekte dorp achter zich te laten. Ze hoopten hun trauma te begraven en een nieuw leven op te bouwen in Vosserwoude. Ze hadden hun lesje wel geleerd: dit nieuwe dorp lag niet langer geïsoleerd en overgeleverd aan de grillen van het bovennatuurlijke, maar juist aan de rand van een bos langs een drukbezochte handelsweg.
-De nieuwe locatie bleek een schot in de roos. Reizigers bleven maar wat graag hangen in Vosserwoude; de lokale herberg draaide overuren en de sfeer was levendig. De oud-inwoners van Wakkerdam zouden bijna vergeten dat mensen niet het enige volk zijn dat deze magische wereld bevolkt… tot die ene dag.
-Zonder waarschuwing werd de toegangsweg afgezet. Soldaten gingen de deuren langs, op zoek naar antwoorden op vragen die niemand durfde te stellen. Al snel verspreidden de geruchten zich als een lopend vuurtje. Iets verderop langs de weg, verscholen achter het struikgewas, was een lijk gevonden. 
-In een wereld waar magie de lucht vult, kijkt niemand meer op van een lijk. De bossen rond Wakkerdam lagen immers vol met de resten van hen die de wilde beesten hadden onderschat. Maar de vondst in Vosserwoude was verontrustend kalm. Op de plek waar de fatale slag was toegebracht, vertoonde de huid een afwijking die daar niet hoorde; een detail dat te doelgericht leek voor een toevallige worsteling. Was de moordenaar simpelweg slordig geweest, of was dit de eerste subtiele groet van een sluimerend gevaar?
-Aan jullie de taak om deze moord te ontrafelen. Ondervraag de bewoners van Vosserwoude en ontdek de duistere waarheid. Wie is de moordenaar onder ons?
-        </p>
-        <button style="width:100%; background: #5d2e0a; color: #f4e4bc;" onclick="toggleStoryModal(false)">START HET AVONTUUR</button>
+        
+        <p>Een jaar na de nachten van pure terreur, waarin de laatste weerwolven van Wakkerdam werden uitgeroeid, besloot een groep overlevenden het vervloekte dorp achter zich te laten. Ze hoopten hun trauma te begraven en een nieuw leven op te bouwen in Vosserwoude. Ze hadden hun lesje wel geleerd: dit nieuwe dorp lag niet langer geïsoleerd en overgeleverd aan de grillen van het bovennatuurlijke, maar juist aan de rand van een bos langs een drukbezochte handelsweg.</p>
+
+        <p>De nieuwe locatie bleek een schot in de roos. Reizigers bleven maar wat graag hangen in Vosserwoude; de lokale herberg draaide overuren en de sfeer was levendig. De oud-inwoners van Wakkerdam zouden bijna vergeten dat mensen niet het enige volk zijn dat deze magische wereld bevolkt… tot die ene dag.</p>
+
+        <p>Zonder waarschuwing werd de toegangsweg afgezet. Soldaten gingen de deuren langs, op zoek naar antwoorden op vragen die niemand durfde te stellen. Al snel verspreidden de geruchten zich als een lopend vuurtje. Iets verderop langs de weg, verscholen achter het struikgewas, was een lijk gevonden.</p>
+
+        <p>In een wereld waar magie de lucht vult, kijkt niemand meer op van een lijk. De bossen rond Wakkerdam lagen immers vol met de resten van hen die de wilde beesten hadden onderschat. Maar de vondst in Vosserwoude was verontrustend kalm. Op de plek waar de fatale slag was toegebracht, vertoonde de huid een afwijking die daar niet hoorde; een detail dat te doelgericht leek voor een toevallige worsteling. Was de moordenaar simpelweg slordig geweest, of was dit de eerste subtiele groet van een sluimerend gevaar?</p>
+
+        <p>Aan jullie de taak om deze moord te ontrafelen. Ondervraag de bewoners van Vosserwoude en ontdek de duistere waarheid. Wie is de moordenaar onder ons?</p>
+
+        <button style="width:100%; background: #800020; color: white; padding: 15px; border-radius: 10px; font-weight: bold; border: 2px solid #555; cursor: pointer;" onclick="toggleStoryModal(false)">START HET ONDERZOEK</button>
     </div>
 </div>
 
@@ -105,40 +127,29 @@ Aan jullie de taak om deze moord te ontrafelen. Ondervraag de bewoners van Vosse
 
 <script>
     const scriptURL = 'https://script.google.com/macros/s/AKfycbw17lDaT0QUhx8XGvVHtNPQUs4CEAlsP5CrhRGPAERSZteRzyEP2-AQvGvqhO5gsduN/exec';
-    
     let teamnaam = localStorage.getItem('teamnaam');
 
     if (!teamnaam || teamnaam.trim() === "") {
-        alert("Geen teamnaam gevonden. Meld je eerst aan.");
         window.location.href = 'index.html';
     }
 
-    // --- MODAL LOGICA ---
     function toggleInfoModal(show) {
         document.getElementById('infoModal').style.display = show ? 'block' : 'none';
     }
 
     function toggleStoryModal(show) {
         document.getElementById('storyModal').style.display = show ? 'block' : 'none';
-        // Markeer als gezien in localStorage als de modal gesloten wordt
-        if (!show) {
-            localStorage.setItem('introGezien', 'true');
-        }
+        if (!show) localStorage.setItem('storyRead', 'true');
     }
 
-    // Automatisch openen bij de eerste keer
     window.onload = function() {
-        if (!localStorage.getItem('introGezien')) {
+        if (!localStorage.getItem('storyRead')) {
             toggleStoryModal(true);
         }
     };
 
-    // --- KAART LOGICA ---
     var map = L.map('map', { zoomControl: false }).setView([52.1678, 4.5338], 15);
-    
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19
-    }).addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
     let areas = [];
     const polygonLayers = {};
@@ -152,77 +163,37 @@ Aan jullie de taak om deze moord te ontrafelen. Ondervraag de bewoners van Vosse
             
             data.locaties.forEach((area, index) => {
                 if (!polygonLayers[area.name]) {
-                    const poly = L.polygon(area.coords, { 
-                        color: '#800020', 
-                        fillColor: '#800020', 
-                        fillOpacity: 0.4 
-                    }).addTo(map);
-
+                    const poly = L.polygon(area.coords, { color: '#800020', fillColor: '#800020', fillOpacity: 0.4 }).addTo(map);
                     polygonLayers[area.name] = poly;
                     poly.bindPopup(`<b>${area.name}</b><br>${area.riddle}`);
-                    
                     const center = poly.getBounds().getCenter();
-                    const marker = L.marker(center, { 
-                        icon: L.divIcon({ className: 'area-number', html: index + 1 }), 
-                        interactive: false 
-                    }).addTo(map);
-                    markerLayers[area.name] = marker;
+                    markerLayers[area.name] = L.marker(center, { icon: L.divIcon({ className: 'area-number', html: index + 1 }), interactive: false }).addTo(map);
                 }
             });
-
             areas = data.locaties;
-
             data.voltooid.forEach(naam => {
-                if (polygonLayers[naam]) {
-                    polygonLayers[naam].setStyle({ color: '#27ae60', fillColor: '#27ae60' });
-                }
+                if (polygonLayers[naam]) polygonLayers[naam].setStyle({ color: '#27ae60', fillColor: '#27ae60' });
             });
-        } catch (e) { 
-            console.log("Synchronisatie met Google Sheets mislukt."); 
-        }
+        } catch (e) { console.log("Synchronisatie fout"); }
     }
 
     function startGps() {
-        const msg = document.getElementById('status-msg');
-        msg.style.display = 'block';
-        
+        document.getElementById('status-msg').style.display = 'block';
         navigator.geolocation.watchPosition((pos) => {
-            msg.style.display = 'none';
-            userLat = pos.coords.latitude;
-            userLon = pos.coords.longitude;
-            
-            if (userMarker) { 
-                userMarker.setLatLng([userLat, userLon]); 
-            } else { 
-                userMarker = L.circleMarker([userLat, userLon], { 
-                    radius: 8, color: '#fff', weight: 4, fillColor: '#3498db', fillOpacity: 1 
-                }).addTo(map); 
-                map.flyTo([userLat, userLon], 17);
-            }
-        }, (err) => {
-            alert("Zet je GPS aan voor een betere ervaring.");
-        }, { enableHighAccuracy: true });
+            document.getElementById('status-msg').style.display = 'none';
+            userLat = pos.coords.latitude; userLon = pos.coords.longitude;
+            if (userMarker) { userMarker.setLatLng([userLat, userLon]); } 
+            else { userMarker = L.circleMarker([userLat, userLon], { radius: 8, color: '#fff', weight: 4, fillColor: '#3498db', fillOpacity: 1 }).addTo(map); map.flyTo([userLat, userLon], 17); }
+        }, (err) => alert("Zet GPS aan"), { enableHighAccuracy: true });
     }
 
     function checkCheckpoint() {
-        if (!userLat) return alert("Activeer eerst de 📍 GPS knop!");
-        
-        const currentArea = areas.find(a => {
-            const dist = map.distance([userLat, userLon], [a.targetLat, a.targetLon]);
-            return dist <= 35;
-        });
-
+        if (!userLat) return alert("Start eerst GPS!");
+        const currentArea = areas.find(a => map.distance([userLat, userLon], [a.targetLat, a.targetLon]) <= 35);
         if (currentArea) {
-            if (polygonLayers[currentArea.name].options.color === '#27ae60') {
-                alert("Jullie hebben dit raadsel al opgelost!");
-            } else {
-                sessionStorage.setItem('locationName', currentArea.name);
-                sessionStorage.setItem('checkpointReached', 'true'); 
-                window.location.href = 'locatiepagina.html';
-            }
-        } else {
-            alert("Je bent nog niet op de juiste plek. Loop naar het middelpunt van een bordeauxrood gebied!");
-        }
+            if (polygonLayers[currentArea.name].options.color === '#27ae60') alert("Reeds bezocht!");
+            else { sessionStorage.setItem('locationName', currentArea.name); sessionStorage.setItem('checkpointReached', 'true'); window.location.href = 'locatiepagina.html'; }
+        } else alert("Niet dichtbij genoeg.");
     }
 
     updateData();
