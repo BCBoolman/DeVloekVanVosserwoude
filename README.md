@@ -1,2 +1,2 @@
-# DeVampierVanVosserwoude
-De Vampier Van Vosserwoude - Game
+# DeVloekVanVosserwoude
+De Vloek Van Vosserwoude - Game
