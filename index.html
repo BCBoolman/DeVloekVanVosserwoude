@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>De Vloek Van Vosserwoude: Aanmelden</title>
     <style>
-        /* Basis styling voor de achtergrond en tekst */
+        /* Basis styling voor de achtergrond en het font */
         body { 
             margin: 0; padding: 0; 
             font-family: 'Georgia', serif; 
@@ -17,7 +17,7 @@
         }
 
         /* Zorgt dat alle invoervelden en knoppen ook Georgia gebruiken */
-        input, button, select, textarea {
+        input, button {
             font-family: 'Georgia', serif;
         }
 
@@ -48,24 +48,38 @@
             text-align: center;
         }
 
-        button {
+        /* Algemene styling voor beide knoppen voor gelijke grootte */
+        .btn-large {
             width: 100%;
             padding: 15px;
-            background: #800020;
-            color: white;
             border: none;
             border-radius: 8px;
-            font-size: 18px;
+            font-size: 16px; /* Iets kleiner voor betere fit bij lange teksten */
             font-weight: bold;
             text-transform: uppercase;
             cursor: pointer;
             transition: 0.3s;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            display: block;
+            box-sizing: border-box;
         }
 
-        button:active {
-            background: #a00020;
+        /* Specifieke kleuren voor de startknop */
+        .start-btn {
+            background: #800020;
+            color: white;
+        }
+
+        /* Specifieke kleuren voor de uitlegknop */
+        .uitleg-btn {
+            background: #000000;
+            color: #ffffff;
+            border: 1px solid #333; /* Subtiele rand voor definitie */
+        }
+
+        .btn-large:active {
             transform: scale(0.98);
+            opacity: 0.9;
         }
 
         .game-icon {
@@ -93,47 +107,36 @@
             width: 80%;
             max-width: 400px;
             color: #f4e4bc;
-            font-family: 'Georgia', serif;
-        }
-
-        .uitleg-btn {
-            background: none;
-            border: 1px solid #800020;
-            color: #800020;
-            font-size: 12px;
-            padding: 8px;
-            margin-top: 10px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
 
 <div class="login-card">
-    <img src="images/placeholder.jpg" alt="Vleermuis" class="game-icon">
+    <img src="images/placeholder.jpg" alt="Spel Icoon" class="game-icon">
     
     <h1>DE VLOEK VAN VOSSERWOUDE</h1>
     <p>Voer jullie gekozen teamnaam hier in. Let op dat dit op alle telefoons volledig hetzelfde is geschreven!</p>
     
     <input type="text" id="teamInput" placeholder="TEAMNAAM..." autocomplete="off">
-    <button onclick="startSpel()">START DE VOSSENJACHT</button>
     
-    <button class="uitleg-btn" onclick="openUitleg()">SPELUITLEG</button>
+    <button class="btn-large start-btn" onclick="startSpel()">START DE VOSSENJACHT</button>
+    <button class="btn-large uitleg-btn" onclick="openUitleg()">HOE WERKT HET SPEL?</button>
 </div>
 
 <div id="uitlegModal" class="modal">
     <div class="modal-content">
-        <h2>HOE WERKT HET?</h2>
+        <h2>SPELUITLEG</h2>
         <p>Blijf als team bij elkaar. Zoek de vossen in het bos en scan hun codes. Zorg dat iedereen exact dezelfde teamnaam gebruikt!</p>
-        <button onclick="sluitUitleg()">SLUITEN</button>
+        <button class="btn-large start-btn" onclick="sluitUitleg()">BEGREPEN</button>
     </div>
 </div>
 
 <script>
-    // Functie voor het verwerken van de teamnaam
+    // Functie voor het controleren en opslaan van de teamnaam
     function startSpel() {
         const input = document.getElementById('teamInput').value;
-        
-        // De invoer wordt genormaliseerd (spaties weg, kleine letters)
         const genormaliseerdeNaam = input.trim().toLowerCase();
 
         if (genormaliseerdeNaam.length < 3) {
@@ -141,15 +144,26 @@
             return;
         }
 
-        // De teamnaam wordt opgeslagen en de speler gaat naar de kaart
         localStorage.setItem('teamnaam', genormaliseerdeNaam);
         window.location.href = 'kaart.html';
     }
 
-    // Functies voor de popup bediening
+    // Functies voor het tonen en verbergen van de modal
     function openUitleg() {
         document.getElementById('uitlegModal').style.display = "block";
     }
 
     function sluitUitleg() {
-        document.getElementById('uitlegModal').style.display = "none
+        document.getElementById('uitlegModal').style.display = "none";
+    }
+
+    // Ondersteuning voor de Enter-toets in het tekstveld
+    document.getElementById('teamInput').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            startSpel();
+        }
+    });
+</script>
+
+</body>
+</html>
