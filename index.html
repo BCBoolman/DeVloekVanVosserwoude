@@ -15,6 +15,180 @@
             height: 100vh; overflow: hidden;
         }
 
+        /* Perkament overlay effect */
+        #map-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            z-index: -1; pointer-events: none; 
+            background-image: url('https://www.transparenttextures.com/patterns/parchment.png'); 
+            background-color: rgba(101, 67, 33, 0.1); 
+            mix-blend-mode: multiply; 
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.5); 
+        }
+
+        .login-card {
+            background: #2a2a2a;
+            padding: 40px 30px;
+            border-radius: 15px;
+            border: 3px double #800020;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            text-align: center;
+            width: 85%;
+            max-width: 350px;
+            z-index: 2;
+        }
+
+        h1 { color: #800020; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; font-size: 22px; }
+        .main-p { font-size: 14px; margin-bottom: 25px; line-height: 1.5; color: #f4e4bc; }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            border: 2px solid #555;
+            background: #f4e4bc;
+            color: #5d2e0a;
+            font-size: 18px;
+            font-family: 'Georgia', serif;
+            box-sizing: border-box;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        /* Universele knopstijl met de grijze rand van de kaart */
+        .btn-large {
+            width: 100%;
+            padding: 18px 5px;
+            border: 2px solid #555; /* De grijze rand */
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 13px;
+            text-transform: uppercase;
+            cursor: pointer;
+            font-family: 'Georgia', serif;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            margin-bottom: 15px;
+            transition: 0.3s;
+            display: block;
+        }
+
+        /* Bordeaux rood zoals de 'Check' knop */
+        .start-btn { 
+            background: #800020; 
+            color: white; 
+        }
+
+        /* Zwart zoals de GPS/Logboek knoppen */
+        .uitleg-btn { 
+            background: #000; 
+            color: #fff; 
+        }
+
+        .btn-large:active { 
+            transform: translateY(2px); 
+            filter: brightness(0.8); 
+        }
+
+        .game-icon {
+            width: 70px;
+            height: auto;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 0 5px rgba(128, 0, 32, 0.5));
+        }
+
+        /* Modal styling */
+        .modal { 
+            display: none; position: fixed; z-index: 10002; left: 0; top: 0; 
+            width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); 
+            backdrop-filter: blur(5px); 
+        }
+        
+        .modal-content { 
+            background-color: #f4e4bc; margin: 15% auto; padding: 25px; 
+            border-radius: 15px; width: 80%; max-width: 400px; 
+            border: 3px double #5d2e0a; text-align: center; 
+        }
+
+        .modal-content h2 { color: #800020; margin-top: 0; font-size: 20px; }
+        .modal-content p { 
+            color: #5d2e0a !important; 
+            font-size: 15px !important; 
+            line-height: 1.5 !important; 
+            margin-bottom: 20px;
+            display: block !important;
+        }
+    </style>
+</head>
+<body>
+
+<div id="map-overlay"></div>
+
+<div class="login-card">
+    <img src="images/placeholder.jpg" alt="Icoon" class="game-icon">
+    
+    <h1>DE VLOEK VAN VOSSERWOUDE</h1>
+    <p class="main-p">Voer jullie teamnaam in. Gebruik op elke telefoon exact dezelfde naam!</p>
+    
+    <input type="text" id="teamInput" placeholder="TEAMNAAM..." autocomplete="off">
+    
+    <button class="btn-large start-btn" onclick="startSpel()">START DE VOSSENJACHT</button>
+    <button class="btn-large uitleg-btn" onclick="toggleModal(true)">HOE WERKT HET SPEL?</button>
+</div>
+
+<div id="uitlegModal" class="modal">
+    <div class="modal-content">
+        <h2>SPELUITLEG</h2>
+        <p>
+            Blijf als team bij elkaar. Zoek de vossen in het bos en scan hun codes via de kaart. 
+            Zorg dat iedereen <b>exact dezelfde teamnaam</b> gebruikt om jullie voortgang te delen!
+        </p>
+        <button class="btn-large start-btn" style="width:100%; margin-bottom: 0;" onclick="toggleModal(false)">BEGREPEN</button>
+    </div>
+</div>
+
+<script>
+    function toggleModal(show) {
+        document.getElementById('uitlegModal').style.display = show ? 'block' : 'none';
+    }
+
+    function startSpel() {
+        const input = document.getElementById('teamInput').value;
+        const genormaliseerdeNaam = input.trim().toLowerCase();
+
+        if (genormaliseerdeNaam.length < 3) {
+            alert("Kies een teamnaam van minstens 3 tekens.");
+            return;
+        }
+
+        localStorage.setItem('teamnaam', genormaliseerdeNaam);
+        window.location.href = 'kaart.html';
+    }
+
+    document.getElementById('teamInput').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            startSpel();
+        }
+    });
+</script>
+
+</body>
+</html><!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>De Vloek Van Vosserwoude: Aanmelden</title>
+    <style>
+        /* Basis styling overeenkomstig met de kaartpagina */
+        body { 
+            margin: 0; padding: 0; 
+            font-family: 'Georgia', serif; 
+            background: #222; 
+            color: #f4e4bc; 
+            display: flex; justify-content: center; align-items: center; 
+            height: 100vh; overflow: hidden;
+        }
+
         /* Perkament overlay effect voor de sfeer van de kaart */
         #map-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
