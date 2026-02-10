@@ -25,12 +25,12 @@
             box-shadow: inset 0 0 100px rgba(0,0,0,0.5); 
         }
 
-        /* De aanmeldkaart met de 'dubbele rand' stijl van de kaart-modal */
+        /* De aanmeldkaart met de 'dubbele rand' stijl */
         .login-card {
             background: #2a2a2a;
             padding: 40px 30px;
             border-radius: 15px;
-            border: 3px double #800020; /* Overeenkomstig met de kaart modal */
+            border: 3px double #800020;
             box-shadow: 0 0 30px rgba(0,0,0,0.8);
             text-align: center;
             width: 85%;
@@ -39,7 +39,7 @@
         }
 
         h1 { color: #800020; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; font-size: 22px; }
-        p { font-size: 14px; margin-bottom: 25px; line-height: 1.5; color: #f4e4bc; }
+        .main-p { font-size: 14px; margin-bottom: 25px; line-height: 1.5; color: #f4e4bc; }
 
         /* Invoerveld styling */
         input[type="text"] {
@@ -48,7 +48,7 @@
             margin-bottom: 20px;
             border-radius: 12px;
             border: 2px solid #555;
-            background: #f4e4bc; /* Perkament kleur uit de modal */
+            background: #f4e4bc;
             color: #5d2e0a;
             font-size: 18px;
             font-family: 'Georgia', serif;
@@ -57,7 +57,7 @@
             font-weight: bold;
         }
 
-        /* Knoppen styling exact zoals op de kaartpagina */
+        /* Knoppen styling */
         .btn-large {
             width: 100%;
             padding: 18px 5px;
@@ -71,24 +71,13 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
             margin-bottom: 15px;
             transition: 0.3s;
+            display: block;
         }
 
-        /* Startknop: Bordeaux rood zoals de 'Check' knop */
-        .start-btn {
-            background: #800020;
-            color: white;
-        }
+        .start-btn { background: #800020; color: white; border: none; }
+        .uitleg-btn { background: #000; color: #fff; }
 
-        /* Uitlegknop: Zwart zoals de kaart controls */
-        .uitleg-btn {
-            background: #000;
-            color: #fff;
-        }
-
-        .btn-large:active {
-            transform: translateY(2px);
-            filter: brightness(0.8);
-        }
+        .btn-large:active { transform: translateY(2px); filter: brightness(0.8); }
 
         .game-icon {
             width: 70px;
@@ -97,7 +86,7 @@
             filter: drop-shadow(0 0 5px rgba(128, 0, 32, 0.5));
         }
 
-        /* Modal styling (popup) overgenomen van de kaart */
+        /* Modal styling (popup) */
         .modal { 
             display: none; position: fixed; z-index: 10002; left: 0; top: 0; 
             width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); 
@@ -108,7 +97,16 @@
             background-color: #f4e4bc; margin: 15% auto; padding: 25px; 
             border-radius: 15px; width: 80%; max-width: 400px; 
             border: 3px double #5d2e0a; text-align: center; 
-            color: #5d2e0a; font-family: 'Georgia', serif; 
+        }
+
+        /* Specifieke fix voor de tekst binnen de modal */
+        .modal-content h2 { color: #800020; margin-top: 0; font-size: 20px; }
+        .modal-content p { 
+            color: #5d2e0a !important; 
+            font-size: 15px !important; 
+            line-height: 1.5 !important; 
+            margin-bottom: 20px;
+            display: block !important; /* Forceert zichtbaarheid */
         }
     </style>
 </head>
@@ -120,7 +118,7 @@
     <img src="images/placeholder.jpg" alt="Icoon" class="game-icon">
     
     <h1>DE VLOEK VAN VOSSERWOUDE</h1>
-    <p>Voer jullie teamnaam in. Gebruik op elke telefoon exact dezelfde naam!</p>
+    <p class="main-p">Voer jullie teamnaam in. Gebruik op elke telefoon exact dezelfde naam!</p>
     
     <input type="text" id="teamInput" placeholder="TEAMNAAM..." autocomplete="off">
     
@@ -131,8 +129,11 @@
 <div id="uitlegModal" class="modal">
     <div class="modal-content">
         <h2>SPELUITLEG</h2>
-        <p>Blijf als team bij elkaar. Zoek de vossen in het bos en scan hun codes via de kaart. Zorg dat iedereen exact dezelfde teamnaam gebruikt!</p>
-        <button class="btn-large start-btn" style="width:100%; margin-top:10px;" onclick="toggleModal(false)">BEGREPEN</button>
+        <p>
+            Blijf als team bij elkaar. Zoek de vossen in het bos en scan hun codes via de kaart. 
+            Zorg dat iedereen <b>exact dezelfde teamnaam</b> gebruikt om jullie voortgang te delen!
+        </p>
+        <button class="btn-large start-btn" style="width:100%; margin-bottom: 0;" onclick="toggleModal(false)">BEGREPEN</button>
     </div>
 </div>
 
