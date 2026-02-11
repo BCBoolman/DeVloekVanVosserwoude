@@ -17,7 +17,7 @@
             position: relative;
         }
 
-        /* Perkament overlay op de achtergrond (geen dubbele elementen) */
+        /* Perkament overlay op de achtergrond */
         #map-overlay { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             z-index: 1; pointer-events: none; 
@@ -37,7 +37,7 @@
             text-align: center;
             width: 85%;
             max-width: 340px;
-            z-index: 10; /* Zorgt dat deze boven de overlay staat */
+            z-index: 10;
             position: relative;
         }
 
@@ -59,11 +59,10 @@
             font-weight: bold;
         }
 
-        /* Universele knopstijl met gedwongen grijze rand */
         .btn-large {
             width: 100%;
             padding: 18px 5px;
-            border: 2px solid #555 !important; /* Forceert de grijze rand */
+            border: 2px solid #555 !important;
             border-radius: 12px;
             font-weight: bold;
             font-size: 13px;
@@ -125,21 +124,42 @@
 </div>
 
 <script>
+    // Variabele om bij te houden of de uitleg bekeken is
+    let uitlegBekeken = false;
+
     function toggleModal(show) {
         document.getElementById('uitlegModal').style.display = show ? 'block' : 'none';
+        // Zodra de modal geopend wordt, zetten we de check op true
+        if (show) {
+            uitlegBekeken = true;
+        }
     }
 
     function startSpel() {
         const input = document.getElementById('teamInput').value;
         const genormaliseerdeNaam = input.trim().toLowerCase();
+        
+        // 1. Check op teamnaam lengte
         if (genormaliseerdeNaam.length < 3) {
             alert("Kies een teamnaam van minstens 3 tekens.");
             return;
         }
+
+        // 2. Check of ze de uitleg hebben overgeslagen
+        if (!uitlegBekeken) {
+            const bevestigen = confirm("Jullie hebben niet gekeken hoe het spel werkt, weten jullie zeker dat jullie willen starten?");
+            if (!bevestigen) {
+                // Als ze op 'Annuleren' drukken, stopt de functie hier
+                return;
+            }
+        }
+
+        // 3. Spel starten
         localStorage.setItem('teamnaam', genormaliseerdeNaam);
         window.location.href = 'kaart.html';
     }
 
+    // Zorg dat Enter ook werkt in het tekstveld
     document.getElementById('teamInput').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') startSpel();
     });
