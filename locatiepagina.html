@@ -4,7 +4,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ondervraging - Vosserwoude</title>
     <style>
+        /* Basis styling */
         body { margin: 0; padding: 20px; font-family: 'Georgia', serif; background: #222; color: #5d2e0a; display: flex; justify-content: center; }
+        
         .paper-content { 
             background-color: #f4e4bc; 
             padding: 25px; 
@@ -14,25 +16,54 @@
             border: 3px double #5d2e0a; 
             box-shadow: 0 10px 40px rgba(0,0,0,0.8);
             background-image: url('https://www.transparenttextures.com/patterns/parchment.png');
+            box-sizing: border-box;
         }
-        h2 { color: #800020; text-align: center; margin-top: 0; }
-        #locatie-foto { width: 100%; border-radius: 8px; margin-bottom: 15px; border: 2px solid #5d2e0a; display: none; }
-        .vraag-tekst { font-size: 18px; line-height: 1.6; margin-bottom: 20px; }
-        input[type="text"] { 
-            width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; 
-            border: 1px solid #5d2e0a; box-sizing: border-box; font-size: 16px;
-        }
-        button { 
-            width: 100%; padding: 15px; border-radius: 10px; border: none; 
-            font-weight: bold; cursor: pointer; text-transform: uppercase;
-        }
-        .btn-check { background: #800020; color: white; }
-        .btn-back { background: #555; color: white; margin-top: 10px; }
+
+        h2 { color: #800020; text-align: center; margin-top: 0; font-size: 22px; letter-spacing: 1px; }
         
+        #locatie-foto { width: 100%; border-radius: 8px; margin-bottom: 15px; border: 2px solid #5d2e0a; display: none; }
+        
+        .vraag-tekst { font-size: 16px; line-height: 1.6; margin-bottom: 20px; text-align: left; }
+        
+        input[type="text"] { 
+            width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 12px; 
+            border: 2px solid #5d2e0a; box-sizing: border-box; font-size: 16px;
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Verbeterde knoppen in de stijl van kaart.html */
+        button { 
+            width: 100%; 
+            padding: 18px 5px; 
+            border: 2px solid #555; 
+            border-radius: 12px; 
+            font-weight: bold; 
+            font-size: 13px;
+            background: #000; 
+            color: #fff; 
+            cursor: pointer; 
+            text-transform: uppercase; 
+            font-family: 'Georgia', serif; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+            transition: transform 0.1s;
+        }
+
+        button:active { background: #333; transform: translateY(2px); }
+
+        /* Specifieke kleur voor de CHECK/INDIENEN knop */
+        .btn-check { background: #800020; border-color: #a04040; }
+        .btn-check:active { background: #a00000; }
+
+        .btn-back { background: #000; }
+
         #success-container { display: none; text-align: center; }
+        
         .hint-box { 
-            background: rgba(255,255,255,0.5); padding: 15px; 
-            border-left: 5px solid #800020; font-style: italic; margin: 15px 0; text-align: left;
+            background: rgba(255,255,255,0.4); padding: 15px; 
+            border: 1px dashed #5d2e0a; border-left: 5px solid #800020; 
+            font-style: italic; margin: 15px 0; text-align: left;
+            border-radius: 0 8px 8px 0;
         }
     </style>
 </head>
@@ -46,7 +77,7 @@
         
         <input type="text" id="antwoordInput" placeholder="Typ hier je antwoord...">
         <button class="btn-check" onclick="controleerAntwoord()">INDIENEN</button>
-        <button class="btn-back" onclick="window.location.href='kaart.html'">KAART</button>
+        <button class="btn-back" onclick="window.location.href='kaart.html'">TERUG NAAR KAART</button>
     </div>
 
     <div id="success-container">
@@ -55,16 +86,15 @@
         <div class="hint-box">
             <p id="hint-tekst"></p>
         </div>
-        <button class="btn-check" onclick="window.location.href='kaart.html'">TERUG NAAR DE KAART</button>
+        <button class="btn-check" onclick="window.location.href='kaart.html'">VERDER ONDERZOEKEN</button>
     </div>
 </div>
 
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbzO11KEK7K1Xmd0AmAGzVKtnCwItUlMbRTfP6RHPfGCD2wJBQdGVzzGjbz8HOqDav_y/exec'; // VERVANG DIT DOOR JE EIGEN URL!
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbzO11KEK7K1Xmd0AmAGzVKtnCwItUlMbRTfP6RHPfGCD2wJBQdGVzzGjbz8HOqDav_y/exec'; 
     const locatieId = sessionStorage.getItem('locationName');
     const teamnaam = localStorage.getItem('teamnaam');
 
-    // 1. Haal vraag en foto op bij laden
     async function laadPagina() {
         if (!locatieId) { window.location.href = 'kaart.html'; return; }
         document.getElementById('locatie-titel').innerText = locatieId.toUpperCase();
@@ -89,12 +119,12 @@
         }
     }
 
-    // 2. Antwoord controleren
     async function controleerAntwoord() {
         const antwoord = document.getElementById('antwoordInput').value;
         if (!antwoord) return alert("Vul een antwoord in!");
 
         const btn = document.querySelector('.btn-check');
+        const origineleTekst = btn.innerText;
         btn.innerText = "CONTROLE...";
         btn.disabled = true;
 
@@ -124,7 +154,7 @@
         } catch (e) {
             alert("Er ging iets mis bij het verzenden.");
             btn.disabled = false;
-            btn.innerText = "INDIENEN";
+            btn.innerText = origineleTekst;
         }
     }
 
