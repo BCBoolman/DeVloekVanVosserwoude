@@ -140,20 +140,41 @@
             if (!bevestigen) return;
         }
 
-        // --- NIEUW: Starttijd registreren ---
+        const startBtn = document.querySelector('.start-btn');
+        const origineleTekst = startBtn.innerText;
+        startBtn.innerText = "CONTROLE...";
+        startBtn.disabled = true;
+
+        // Gebruik de URL van je Google Apps Script
         const scriptURL = "https://script.google.com/macros/s/AKfycbyvGP_g-vfFUn1Vd9Wv5GP-t0A0_mzLRW51PcQxCo3E6EhGU6f05a5bOT7iicfA9jz6/exec";
         
         try {
-            // We sturen een signaal naar de sheet om de starttijd in kolom E te zetten
-            await fetch(`${scriptURL}?action=registerStart&teamnaam=${encodeURIComponent(genormaliseerdeNaam)}`, {
-                mode: 'no-cors'
-            });
-        } catch (e) {
-            console.log("Kon starttijd niet registreren, we gaan wel door.");
-        }
+            // 1. Eerst controleren we de status van het team
+            const response = await fetch(`${scriptURL}?teamnaam=${encodeURIComponent(genormaliseerdeNaam)}`);
+            const data = await response.json();
 
-        localStorage.setItem('teamnaam', genormaliseerdeNaam);
-        window.location.href = 'kaart.html';
+            // 2. Als het team al klaar is (score == maxScore), blokkeren we de toegang
+            if (data.allesVoltooid === true) {
+                alert("Dit team heeft het mysterie van Vosserwoude al opgelost! De toegang tot de kaart is gesloten voor dit team.");
+                startBtn.innerText = origineleTekst;
+                startBtn.disabled = false;
+                return; 
+            }
+
+            // 3. Als het team nog niet klaar is (of nieuw is), registreren we de starttijd
+            // We doen dit nu met een normale fetch zodat we zeker weten dat het gelukt is
+            await fetch(`${scriptURL}?action=registerStart&teamnaam=${encodeURIComponent(genormaliseerdeNaam)}`);
+
+            // 4. Alles OK? Dan pas opslaan en doorsturen
+            localStorage.setItem('teamnaam', genormaliseerdeNaam);
+            window.location.href = 'kaart.html';
+
+        } catch (e) {
+            console.error(e);
+            // Bij een fout (bijv. nieuw team dat nog niet in de lijst staat) proberen we toch te starten
+            localStorage.setItem('teamnaam', genormaliseerdeNaam);
+            window.location.href = 'kaart.html';
+        }
     }
 
     document.getElementById('teamInput').addEventListener('keypress', function (e) {
