@@ -11,27 +11,34 @@
         .leaflet-tile-container { filter: sepia(0.8) brightness(0.8) contrast(1.2); }
         #map-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; background-image: url('https://www.transparenttextures.com/patterns/parchment.png'); background-color: rgba(101, 67, 33, 0.1); mix-blend-mode: multiply; box-shadow: inset 0 0 100px rgba(0,0,0,0.5); }
         
-        /* Namen op de kaart in plaats van nummers */
         .area-label { 
-            font-size: 11px; 
-            font-weight: bold; 
-            color: #000; 
-            text-align: center; 
-            text-shadow: 1px 1px 2px white, -1px -1px 2px white; 
-            white-space: nowrap;
+            font-size: 11px; font-weight: bold; color: #000; text-align: center; 
+            text-shadow: 1px 1px 2px white, -1px -1px 2px white; white-space: nowrap;
         }
 
         .controls { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; gap: 10px; width: 95%; pointer-events: none; }
         button { flex: 1; padding: 18px 5px; border: 2px solid #555; border-radius: 12px; font-weight: bold; font-size: 13px; background: #000; color: #fff; pointer-events: auto; cursor: pointer; text-transform: uppercase; font-family: 'Georgia', serif; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         button:active { background: #333; transform: translateY(2px); }
+        
+        /* Navigatie Styles */
         .top-nav { position: fixed; top: 15px; right: 15px; z-index: 10001; display: flex; gap: 10px; }
+        .top-left { position: fixed; top: 15px; left: 15px; z-index: 10001; }
+        
         .btn-round { width: 45px; height: 45px; border-radius: 50%; background: #000; color: #fff; border: 2px solid #555; font-weight: bold; font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; pointer-events: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        
+        /* Timer Style (aangepast aan jouw ronde knoppen) */
+        .timer-pill { 
+            min-width: 100px; height: 45px; padding: 0 15px; border-radius: 25px; 
+            background: #000; color: #f4e4bc; border: 2px solid #800020; 
+            font-weight: bold; font-size: 16px; display: flex; align-items: center; 
+            justify-content: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); 
+        }
+
         .modal { display: none; position: fixed; z-index: 10002; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); backdrop-filter: blur(5px); }
         .modal-content { background-color: #f4e4bc; margin: 8% auto; padding: 25px; border-radius: 15px; width: 90%; max-width: 450px; border: 3px double #5d2e0a; text-align: center; color: #5d2e0a; font-family: 'Georgia', serif; max-height: 82vh; overflow-y: auto; box-sizing: border-box; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
         .modal-content h2 { color: #800020; margin-top: 0; font-size: 22px; letter-spacing: 1px; }
         .modal-content p { line-height: 1.6; font-size: 15px; text-align: left; margin-bottom: 15px; }
         
-        /* Popup Styling voor Hint */
         .hint-popup-container { max-height: 150px; overflow-y: auto; font-style: italic; color: #1e8449; }
         #status-msg { position: fixed; top: 75px; left: 50%; transform: translateX(-50%); z-index: 10000; background: rgba(0,0,0,0.7); color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; display: none; }
     </style>
@@ -41,6 +48,12 @@
 <div id="status-msg">GPS Signaal zoeken...</div>
 <div id="map-overlay"></div>
 
+<div class="top-left">
+    <div class="timer-pill" id="timer-display">
+        <span>⏳</span><span id="countdown">--:--</span>
+    </div>
+</div>
+
 <div class="top-nav">
     <div class="btn-round" onclick="toggleStoryModal(true)">📖</div>
     <div class="btn-round" onclick="toggleInfoModal(true)">?</div>
@@ -49,7 +62,7 @@
 <div id="infoModal" class="modal">
     <div class="modal-content">
         <h2>BEKNOPTE UITLEG</h2>
-        <p>Klik op een gebied om het raadsel te krijgen. Zet je <b>GPS</b> aan om je eigen positie te zien. Ben je op de juiste plek? Druk op <b>CHECK</b>! Bezochte locaties kleuren groen en tonen de gevonden aanwijzing.</p>
+        <p>Klik op een gebied om het raadsel te krijgen. Zet je <b>GPS</b> aan om je eigen positie te zien. Ben je op de juiste plek? Druk op <b>CHECK</b>! Bezochte locaties kleuren groen.</p>
         <button style="width:100%; background: #800020; color: white; padding: 15px; border-radius: 10px; border: 2px solid #555;" onclick="toggleInfoModal(false)">BEGREPEN</button>
     </div>
 </div>
@@ -57,7 +70,7 @@
 <div id="storyModal" class="modal">
     <div class="modal-content">
         <h2>DE VLOEK VAN VOSSERWOUDE</h2>
-        <p>Welkom rechercheurs. Vosserwoude is in rep en roer na een mysterieuze moord. Ondervraag de bewoners, verzamel aanwijzingen en ontmasker de dader voordat de zon ondergaat.</p>
+        <p>Welkom rechercheurs. Vosserwoude is in rep en roer na een mysterieuze moord. Ondervraag de bewoners, verzamel aanwijzingen en ontmasker de dader voordat de tijd op is.</p>
         <button style="width:100%; background: #800020; color: white; padding: 15px; border-radius: 10px; font-weight: bold; border: 2px solid #555; cursor: pointer;" onclick="toggleStoryModal(false)">START HET ONDERZOEK</button>
     </div>
 </div>
@@ -71,8 +84,9 @@
 </div>
 
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbyTIooB83Vc70VaVwv2cI-uwg2ZRlgoANskNTSONicyuy6d2_LsMyFrs6hHTbEbxRgC/exec';
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyvGP_g-vfFUn1Vd9Wv5GP-t0A0_mzLRW51PcQxCo3E6EhGU6f05a5bOT7iicfA9jz6/exec';
     let teamnaam = localStorage.getItem('teamnaam');
+    const ONTKNOPING_URL = 'ontknoping.html';
 
     if (!teamnaam || teamnaam.trim() === "") { window.location.href = 'index.html'; }
 
@@ -91,21 +105,61 @@
     const polygonLayers = {};
     const markerLayers = {};
     var userLat, userLon, userMarker;
+    let timerStarted = false;
+
+    // --- TIMER FUNCTIE ---
+    function updateTimer(startIsoString) {
+        if (!startIsoString) return;
+        const endTime = new Date(startIsoString).getTime() + (120 * 60 * 1000); // 2 uur
+        
+        const now = new Date().getTime();
+        const distance = endTime - now;
+
+        if (distance <= 0) {
+            window.location.href = ONTKNOPING_URL;
+            return;
+        }
+
+        const hours = Math.floor(distance / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        document.getElementById("countdown").innerText = 
+            (hours > 0 ? hours + ":" : "") + 
+            (minutes < 10 ? "0" + minutes : minutes) + ":" + 
+            (seconds < 10 ? "0" + seconds : seconds);
+            
+        if (distance < 600000) { // Laatste 10 min rood
+            document.getElementById("timer-display").style.borderColor = "#ff4444";
+        }
+    }
 
     async function updateData() {
         try {
             const response = await fetch(`${scriptURL}?teamnaam=${encodeURIComponent(teamnaam)}`);
             const data = await response.json();
             
+            // 1. Winconditie check: Alle locaties behaald
+            if (data.allesVoltooid === true) {
+                window.location.href = ONTKNOPING_URL;
+                return;
+            }
+
+            // 2. Timer update
+            if (data.starttijd) {
+                updateTimer(data.starttijd);
+                if (!timerStarted) {
+                    setInterval(() => updateTimer(data.starttijd), 1000);
+                    timerStarted = true;
+                }
+            }
+
+            // 3. Kaart locaties tekenen
             data.locaties.forEach((area) => {
                 const isVoltooid = data.voltooid.includes(area.name);
-                
-                // 1. Maak of update de Polygoon
                 if (!polygonLayers[area.name]) {
                     const poly = L.polygon(area.coords, { color: '#800020', fillColor: '#800020', fillOpacity: 0.4 }).addTo(map);
                     polygonLayers[area.name] = poly;
-                    
-                    // Label in het midden (Naam van de locatie)
                     const center = poly.getBounds().getCenter();
                     markerLayers[area.name] = L.marker(center, { 
                         icon: L.divIcon({ className: 'area-label', html: area.name }), 
@@ -113,7 +167,6 @@
                     }).addTo(map);
                 }
 
-                // 2. Update kleur en popup inhoud
                 const poly = polygonLayers[area.name];
                 if (isVoltooid) {
                     poly.setStyle({ color: '#27ae60', fillColor: '#27ae60' });
