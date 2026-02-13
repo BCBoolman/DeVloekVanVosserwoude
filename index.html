@@ -17,7 +17,6 @@
             position: relative;
         }
 
-        /* Perkament overlay op de achtergrond */
         #map-overlay { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             z-index: 1; pointer-events: none; 
@@ -27,7 +26,6 @@
             box-shadow: inset 0 0 100px rgba(0,0,0,0.8); 
         }
 
-        /* De centrale kaart */
         .login-card {
             background: #2a2a2a;
             padding: 35px 25px;
@@ -78,12 +76,9 @@
 
         .start-btn { background: #800020; color: white; }
         .uitleg-btn { background: #000; color: #fff; }
-
         .btn-large:active { transform: translateY(2px); filter: brightness(1.2); }
-
         .game-icon { width: 60px; height: auto; margin-bottom: 10px; }
 
-        /* Modal styling */
         .modal { 
             display: none; position: fixed; z-index: 10002; left: 0; top: 0; 
             width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); 
@@ -118,48 +113,49 @@
 <div id="uitlegModal" class="modal">
     <div class="modal-content">
         <h2>SPELUITLEG</h2>
-        <p>Welkom in dit Levend Cluede / Vossenjacht spel! Jullie gaan zo aan de slag om het mysterie van Vosserwoude op te lossen door de bewoners te spreken. Op de volgende pagina kunnen jullie, na een kort introducerend verhaal, op de kaart je eigen locatie zien als je op de <b>GPS</b> knop klikt. Zoals jullie kunnen zien is de stad in een aantal gebieden verdeeld, als jullie er één aanklikken krijgen jullie het raadsel voor de exacte locatie van de bewoner van Vosserwoude te zien. Klikken jullie vervolgens op de <b>Check</b> knop dan wordt gecontroleerd of jullie goed zien. HIERVERDERSCHRIJVEN</p>
+        <p>Welkom in dit Levend Cluedo / Vossenjacht spel! Jullie gaan aan de slag om het mysterie van Vosserwoude op te lossen. Gebruik de kaart en de GPS om bewoners te vinden en raadsels op te lossen.</p>
         <button class="btn-large start-btn" style="width:100%; margin-bottom: 0;" onclick="toggleModal(false)">BEGREPEN</button>
     </div>
 </div>
 
 <script>
-    // Variabele om bij te houden of de uitleg bekeken is
     let uitlegBekeken = false;
 
     function toggleModal(show) {
         document.getElementById('uitlegModal').style.display = show ? 'block' : 'none';
-        // Zodra de modal geopend wordt, zetten we de check op true
-        if (show) {
-            uitlegBekeken = true;
-        }
+        if (show) { uitlegBekeken = true; }
     }
 
-    function startSpel() {
+    async function startSpel() {
         const input = document.getElementById('teamInput').value;
         const genormaliseerdeNaam = input.trim().toLowerCase();
         
-        // 1. Check op teamnaam lengte
         if (genormaliseerdeNaam.length < 3) {
             alert("Kies een teamnaam van minstens 3 tekens.");
             return;
         }
 
-        // 2. Check of ze de uitleg hebben overgeslagen
         if (!uitlegBekeken) {
             const bevestigen = confirm("Jullie hebben niet gekeken hoe het spel werkt, weten jullie zeker dat jullie willen starten?");
-            if (!bevestigen) {
-                // Als ze op 'Annuleren' drukken, stopt de functie hier
-                return;
-            }
+            if (!bevestigen) return;
         }
 
-        // 3. Spel starten
+        // --- NIEUW: Starttijd registreren ---
+        const scriptURL = "https://script.google.com/macros/s/AKfycbziObwh3l-5WoYObzPudO7mnuibX1JMDmvgBglUJrhTn1k680cwLbpHdERmjeNk0DA/exec";
+        
+        try {
+            // We sturen een signaal naar de sheet om de starttijd in kolom E te zetten
+            await fetch(`${scriptURL}?action=registerStart&teamnaam=${encodeURIComponent(genormaliseerdeNaam)}`, {
+                mode: 'no-cors'
+            });
+        } catch (e) {
+            console.log("Kon starttijd niet registreren, we gaan wel door.");
+        }
+
         localStorage.setItem('teamnaam', genormaliseerdeNaam);
         window.location.href = 'kaart.html';
     }
 
-    // Zorg dat Enter ook werkt in het tekstveld
     document.getElementById('teamInput').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') startSpel();
     });
