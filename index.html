@@ -77,6 +77,7 @@
         .start-btn { background: #800020; color: white; }
         .uitleg-btn { background: #000; color: #fff; }
         .btn-large:active { transform: translateY(2px); filter: brightness(1.2); }
+        .start-btn:disabled { background: #444; color: #888; cursor: not-allowed; }
         .game-icon { width: 60px; height: auto; margin-bottom: 10px; }
 
         .modal { 
@@ -106,7 +107,7 @@
     
     <input type="text" id="teamInput" placeholder="TEAMNAAM..." autocomplete="off">
     
-    <button class="btn-large start-btn" onclick="startSpel()">START DE VOSSENJACHT</button>
+    <button class="btn-large start-btn" id="startBtn" onclick="startSpel()">START DE VOSSENJACHT</button>
     <button class="btn-large uitleg-btn" onclick="toggleModal(true)">HOE WERKT HET SPEL?</button>
 </div>
 
@@ -140,12 +141,11 @@
             if (!bevestigen) return;
         }
 
-        const startBtn = document.querySelector('.start-btn');
+        const startBtn = document.getElementById('startBtn');
         const origineleTekst = startBtn.innerText;
-        startBtn.innerText = "CONTROLE...";
+        startBtn.innerText = "BEZIG MET LADEN...";
         startBtn.disabled = true;
 
-        // Gebruik de URL van je Google Apps Script
         const scriptURL = "https://script.google.com/macros/s/AKfycbz-6eQ2FGJSzQbcxvhVXYZKhw_d8OZHCmCdcGn2w5SbSmUpC0ZgYJL0nSMUb8b7G_Me/exec";
         
         try {
@@ -153,25 +153,27 @@
             const response = await fetch(`${scriptURL}?teamnaam=${encodeURIComponent(genormaliseerdeNaam)}`);
             const data = await response.json();
 
-            // 2. Als het team al klaar is (score == maxScore), blokkeren we de toegang
+            // 2. Blokkeren indien voltooid
             if (data.allesVoltooid === true) {
-                alert("Dit team heeft het mysterie van Vosserwoude al opgelost! De toegang tot de kaart is gesloten voor dit team.");
+                alert("Dit team heeft het mysterie van Vosserwoude al opgelost! De toegang tot de kaart is gesloten.");
                 startBtn.innerText = origineleTekst;
                 startBtn.disabled = false;
                 return; 
             }
 
-            // 3. Als het team nog niet klaar is (of nieuw is), registreren we de starttijd
-            // We doen dit nu met een normale fetch zodat we zeker weten dat het gelukt is
-            await fetch(`${scriptURL}?action=registerStart&teamnaam=${encodeURIComponent(genormaliseerdeNaam)}`);
+            // 3. Registreer starttijd en WACHT op bevestiging
+            // Dit zorgt ervoor dat de rij in Google Sheets wordt aangemaakt voordat we doorgaan
+            const registerRes = await fetch(`${scriptURL}?action=registerStart&teamnaam=${encodeURIComponent(genormaliseerdeNaam)}`);
+            const registerText = await registerRes.text();
+            console.log("Registratie status:", registerText);
 
-            // 4. Alles OK? Dan pas opslaan en doorsturen
+            // 4. Opslaan en doorsturen
             localStorage.setItem('teamnaam', genormaliseerdeNaam);
             window.location.href = 'kaart.html';
 
         } catch (e) {
-            console.error(e);
-            // Bij een fout (bijv. nieuw team dat nog niet in de lijst staat) proberen we toch te starten
+            console.error("Er ging iets mis:", e);
+            // Fail-safe: als de server traag is, proberen we het na 2 seconden alsnog door te zetten
             localStorage.setItem('teamnaam', genormaliseerdeNaam);
             window.location.href = 'kaart.html';
         }
