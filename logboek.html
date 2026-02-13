@@ -10,11 +10,21 @@
             color: #333; min-height: 100vh; display: flex; flex-direction: column; align-items: center;
         }
 
-        h1 { color: #800020; text-transform: uppercase; letter-spacing: 2px; text-align: center; margin-bottom: 10px; }
+        /* Timer Style (Consistent met kaart en locatiepagina) */
+        .top-left { position: fixed; top: 15px; left: 15px; z-index: 10001; }
+        .timer-pill { 
+            min-width: 100px; height: 45px; padding: 0 15px; border-radius: 25px; 
+            background: #000; color: #f4e4bc; border: 2px solid #800020; 
+            font-weight: bold; font-size: 16px; display: flex; align-items: center; 
+            justify-content: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); 
+        }
+
+        h1 { color: #800020; text-transform: uppercase; letter-spacing: 2px; text-align: center; margin-bottom: 10px; margin-top: 50px; }
         
         .parchment-container {
             background: #f4e4bc; padding: 20px; border-radius: 5px; border: 2px solid #5d2e0a;
             box-shadow: 5px 5px 15px rgba(0,0,0,0.5); width: 100%; max-width: 400px; box-sizing: border-box;
+            background-image: url('https://www.transparenttextures.com/patterns/parchment.png');
         }
 
         .your-score {
@@ -28,18 +38,26 @@
         th { border-bottom: 1px solid #5d2e0a; padding: 10px; text-align: left; font-size: 14px; text-transform: uppercase; }
         td { padding: 10px; border-bottom: 1px solid rgba(93, 46, 10, 0.2); font-size: 15px; }
 
-        .rank-1 { font-weight: bold; color: #d4af37; } /* Goud voor de winnaar */
+        .rank-1 { font-weight: bold; color: #d4af37; } 
 
         .nav-buttons { margin-top: 30px; width: 100%; max-width: 400px; display: flex; gap: 10px; }
         button { 
             flex: 1; padding: 15px; border: 2px solid #555; border-radius: 12px; 
             font-family: 'Georgia', serif; font-weight: bold; text-transform: uppercase;
             background: #000; color: #fff; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
+        button:active { transform: translateY(2px); }
         .loading { text-align: center; font-style: italic; color: #5d2e0a; margin: 20px 0; }
     </style>
 </head>
 <body>
+
+    <div class="top-left">
+        <div class="timer-pill" id="timer-display">
+            <span>⏳</span><span id="countdown">--:--</span>
+        </div>
+    </div>
 
     <h1>Logboek</h1>
 
@@ -60,8 +78,7 @@
                     <th>Score</th>
                 </tr>
             </thead>
-            <tbody id="leaderboardBody">
-                </tbody>
+            <tbody id="leaderboardBody"></tbody>
         </table>
     </div>
 
@@ -70,27 +87,70 @@
     </div>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbyTIooB83Vc70VaVwv2cI-uwg2ZRlgoANskNTSONicyuy6d2_LsMyFrs6hHTbEbxRgC/exec';
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbyvGP_g-vfFUn1Vd9Wv5GP-t0A0_mzLRW51PcQxCo3E6EhGU6f05a5bOT7iicfA9jz6/exec';
         const teamnaam = localStorage.getItem('teamnaam') || "Onbekend";
+        const ONTKNOPING_URL = 'ontknoping.html';
+        let timerStarted = false;
 
         document.getElementById('displayTeamnaam').innerText = teamnaam;
 
+        // --- TIMER LOGICA ---
+        function updateTimer(startIsoString) {
+            if (!startIsoString) return;
+            const endTime = new Date(startIsoString).getTime() + (120 * 60 * 1000);
+            const now = new Date().getTime();
+            const distance = endTime - now;
+
+            if (distance <= 0) {
+                window.location.href = ONTKNOPING_URL;
+                return;
+            }
+
+            const hours = Math.floor(distance / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("countdown").innerText = 
+                (hours > 0 ? hours + ":" : "") + 
+                (minutes < 10 ? "0" + minutes : minutes) + ":" + 
+                (seconds < 10 ? "0" + seconds : seconds);
+                
+            if (distance < 600000) document.getElementById("timer-display").style.borderColor = "#ff4444";
+        }
+
         async function loadLeaderboard() {
             try {
-                // We halen de data op. De server stuurt ook de scores van alle teams mee.
+                // 1. Haal algemene team-status op voor de timer en win-check
+                const statusRes = await fetch(`${scriptURL}?teamnaam=${encodeURIComponent(teamnaam)}`);
+                const statusData = await statusRes.json();
+
+                // Check op winst
+                if (statusData.allesVoltooid === true) {
+                    window.location.href = ONTKNOPING_URL;
+                    return;
+                }
+
+                // Start timer
+                if (statusData.starttijd) {
+                    updateTimer(statusData.starttijd);
+                    if (!timerStarted) {
+                        setInterval(() => updateTimer(statusData.starttijd), 1000);
+                        timerStarted = true;
+                    }
+                }
+
+                // 2. Haal Ranglijst op
                 const response = await fetch(`${scriptURL}?getLeaderboard=true`);
                 const data = await response.json();
                 
                 const tbody = document.getElementById('leaderboardBody');
                 tbody.innerHTML = "";
 
-                // Zoek eigen score in de lijst
                 const myData = data.find(row => row.team.toLowerCase() === teamnaam.toLowerCase());
                 if (myData) {
                     document.getElementById('displayScore').innerText = myData.score;
                 }
 
-                // Vul de tabel
                 data.forEach((entry, index) => {
                     const row = tbody.insertRow();
                     if(index === 0) row.className = "rank-1";
@@ -109,6 +169,8 @@
         }
 
         loadLeaderboard();
+        // Ververs ranglijst elke 30 seconden
+        setInterval(loadLeaderboard, 30000);
     </script>
 </body>
 </html>
