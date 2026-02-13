@@ -17,12 +17,21 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.8);
             background-image: url('https://www.transparenttextures.com/patterns/parchment.png');
             box-sizing: border-box;
+            position: relative;
+            margin-top: 60px; /* Ruimte voor de timer boven de kaart */
+        }
+
+        /* Timer Style (Zelfde als kaart.html) */
+        .top-left { position: fixed; top: 15px; left: 15px; z-index: 10001; }
+        .timer-pill { 
+            min-width: 100px; height: 45px; padding: 0 15px; border-radius: 25px; 
+            background: #000; color: #f4e4bc; border: 2px solid #800020; 
+            font-weight: bold; font-size: 16px; display: flex; align-items: center; 
+            justify-content: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); 
         }
 
         h2 { color: #800020; text-align: center; margin-top: 0; font-size: 22px; letter-spacing: 1px; }
-        
         #locatie-foto { width: 100%; border-radius: 8px; margin-bottom: 15px; border: 2px solid #5d2e0a; display: none; }
-        
         .vraag-tekst { font-size: 16px; line-height: 1.6; margin-bottom: 20px; text-align: left; }
         
         input[type="text"] { 
@@ -31,43 +40,32 @@
             background: rgba(255,255,255,0.3);
         }
 
-        /* Verbeterde knoppen in de stijl van kaart.html */
         button { 
-            width: 100%; 
-            padding: 18px 5px; 
-            border: 2px solid #555; 
-            border-radius: 12px; 
-            font-weight: bold; 
-            font-size: 13px;
-            background: #000; 
-            color: #fff; 
-            cursor: pointer; 
-            text-transform: uppercase; 
-            font-family: 'Georgia', serif; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            margin-bottom: 10px;
-            transition: transform 0.1s;
+            width: 100%; padding: 18px 5px; border: 2px solid #555; border-radius: 12px; 
+            font-weight: bold; font-size: 13px; background: #000; color: #fff; 
+            cursor: pointer; text-transform: uppercase; font-family: 'Georgia', serif; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); margin-bottom: 10px;
         }
 
         button:active { background: #333; transform: translateY(2px); }
-
-        /* Specifieke kleur voor de CHECK/INDIENEN knop */
         .btn-check { background: #800020; border-color: #a04040; }
-        .btn-check:active { background: #a00000; }
-
         .btn-back { background: #000; }
 
         #success-container { display: none; text-align: center; }
-        
         .hint-box { 
             background: rgba(255,255,255,0.4); padding: 15px; 
             border: 1px dashed #5d2e0a; border-left: 5px solid #800020; 
-            font-style: italic; margin: 15px 0; text-align: left;
-            border-radius: 0 8px 8px 0;
+            font-style: italic; margin: 15px 0; text-align: left; border-radius: 0 8px 8px 0;
         }
     </style>
 </head>
 <body>
+
+<div class="top-left">
+    <div class="timer-pill" id="timer-display">
+        <span>⏳</span><span id="countdown">--:--</span>
+    </div>
+</div>
 
 <div class="paper-content">
     <div id="vraag-container">
@@ -91,9 +89,36 @@
 </div>
 
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbyTIooB83Vc70VaVwv2cI-uwg2ZRlgoANskNTSONicyuy6d2_LsMyFrs6hHTbEbxRgC/exec'; 
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyvGP_g-vfFUn1Vd9Wv5GP-t0A0_mzLRW51PcQxCo3E6EhGU6f05a5bOT7iicfA9jz6/exec'; 
     const locatieId = sessionStorage.getItem('locationName');
     const teamnaam = localStorage.getItem('teamnaam');
+    const ONTKNOPING_URL = 'ontknoping.html';
+
+    let timerStarted = false;
+
+    // --- TIMER LOGICA ---
+    function updateTimer(startIsoString) {
+        if (!startIsoString) return;
+        const endTime = new Date(startIsoString).getTime() + (120 * 60 * 1000);
+        const now = new Date().getTime();
+        const distance = endTime - now;
+
+        if (distance <= 0) {
+            window.location.href = ONTKNOPING_URL;
+            return;
+        }
+
+        const hours = Math.floor(distance / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        document.getElementById("countdown").innerText = 
+            (hours > 0 ? hours + ":" : "") + 
+            (minutes < 10 ? "0" + minutes : minutes) + ":" + 
+            (seconds < 10 ? "0" + seconds : seconds);
+            
+        if (distance < 600000) document.getElementById("timer-display").style.borderColor = "#ff4444";
+    }
 
     async function laadPagina() {
         if (!locatieId) { window.location.href = 'kaart.html'; return; }
@@ -102,6 +127,21 @@
         try {
             const res = await fetch(`${scriptURL}?getDetails=${encodeURIComponent(locatieId)}&teamnaam=${encodeURIComponent(teamnaam)}`);
             const data = await res.json();
+
+            // Check winconditie (via score)
+            if (data.allesVoltooid === true) {
+                window.location.href = ONTKNOPING_URL;
+                return;
+            }
+
+            // Start timer
+            if (data.starttijd) {
+                updateTimer(data.starttijd);
+                if (!timerStarted) {
+                    setInterval(() => updateTimer(data.starttijd), 1000);
+                    timerStarted = true;
+                }
+            }
 
             if (data.blokkade > 0) {
                 alert(`Deze bewoner weigert nog te praten. Kom over ${data.blokkade} minuten terug.`);
@@ -144,6 +184,9 @@
                 document.getElementById('vraag-container').style.display = 'none';
                 document.getElementById('success-container').style.display = 'block';
                 document.getElementById('hint-tekst').innerText = hint;
+                
+                // Optioneel: check direct na goed antwoord of het spel nu klaar is
+                // Dit wordt sowieso bij de volgende kaart-refresh gedaan, maar we kunnen laadPagina herhalen.
             } else if (result === "WRONG") {
                 alert("Dat is niet het juiste antwoord! De bewoner is beledigd en praat de komende 10 minuten niet meer met je.");
                 window.location.href = 'kaart.html';
