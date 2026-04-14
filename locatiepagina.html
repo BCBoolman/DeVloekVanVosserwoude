@@ -122,7 +122,7 @@
 
     async function laadPagina() {
         if (!locatieId) { window.location.href = 'kaart.html'; return; }
-        document.getElementById('locatie-titel').innerText = locatieId.toUpperCase();
+        document.getElementById('locatie-titel').innerHTML = locatieId.toUpperCase();
 
         try {
             const res = await fetch(`${scriptURL}?getDetails=${encodeURIComponent(locatieId)}&teamnaam=${encodeURIComponent(teamnaam)}`);
@@ -183,7 +183,7 @@
                 const hint = result.split("|")[1];
                 document.getElementById('vraag-container').style.display = 'none';
                 document.getElementById('success-container').style.display = 'block';
-                document.getElementById('hint-tekst').innerText = hint;
+                document.getElementById('hint-tekst').innerHTML = hint;
                 
                 // Optioneel: check direct na goed antwoord of het spel nu klaar is
                 // Dit wordt sowieso bij de volgende kaart-refresh gedaan, maar we kunnen laadPagina herhalen.
