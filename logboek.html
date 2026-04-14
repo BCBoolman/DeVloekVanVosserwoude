@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Logboek</title>
+    <title>Logboek - Vosserwoude</title>
     <style>
         body { 
             margin: 0; padding: 20px; font-family: 'Georgia', serif; 
@@ -10,7 +10,6 @@
             color: #333; min-height: 100vh; display: flex; flex-direction: column; align-items: center;
         }
 
-        /* Timer Style (Consistent met kaart en locatiepagina) */
         .top-left { position: fixed; top: 15px; left: 15px; z-index: 10001; }
         .timer-pill { 
             min-width: 100px; height: 45px; padding: 0 15px; border-radius: 25px; 
@@ -23,32 +22,38 @@
         
         .parchment-container {
             background: #f4e4bc; padding: 20px; border-radius: 5px; border: 2px solid #5d2e0a;
-            box-shadow: 5px 5px 15px rgba(0,0,0,0.5); width: 100%; max-width: 400px; box-sizing: border-box;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.5); width: 100%; max-width: 500px; box-sizing: border-box;
             background-image: url('https://www.transparenttextures.com/patterns/parchment.png');
+            margin-bottom: 20px;
         }
 
-        .your-score {
+        .your-stats {
             text-align: center; border-bottom: 2px double #5d2e0a; margin-bottom: 20px; padding-bottom: 15px;
         }
 
-        .your-score h2 { margin: 5px 0; font-size: 18px; color: #5d2e0a; }
-        .score-val { font-size: 32px; font-weight: bold; color: #800020; }
+        .your-stats h2 { margin: 5px 0; font-size: 18px; color: #5d2e0a; text-transform: uppercase; }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { border-bottom: 1px solid #5d2e0a; padding: 10px; text-align: left; font-size: 14px; text-transform: uppercase; }
-        td { padding: 10px; border-bottom: 1px solid rgba(93, 46, 10, 0.2); font-size: 15px; }
+        .character-list-own {
+            text-align: left; background: rgba(255,255,255,0.3); padding: 15px; 
+            border: 1px dashed #5d2e0a; border-radius: 8px; font-size: 16px; line-height: 1.5;
+        }
 
-        .rank-1 { font-weight: bold; color: #d4af37; } 
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
+        th { border-bottom: 1px solid #5d2e0a; padding: 10px; text-align: left; font-size: 12px; text-transform: uppercase; }
+        td { padding: 10px; border-bottom: 1px solid rgba(93, 46, 10, 0.2); font-size: 13px; vertical-align: top; overflow: hidden; }
 
-        .nav-buttons { margin-top: 30px; width: 100%; max-width: 400px; display: flex; gap: 10px; }
+        .team-col { width: 30%; font-weight: bold; }
+        .status-col { width: 70%; font-style: italic; }
+
+        .nav-buttons { margin-top: 10px; width: 100%; max-width: 500px; display: flex; gap: 10px; padding-bottom: 30px; }
         button { 
             flex: 1; padding: 15px; border: 2px solid #555; border-radius: 12px; 
             font-family: 'Georgia', serif; font-weight: bold; text-transform: uppercase;
             background: #000; color: #fff; cursor: pointer;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
-        button:active { transform: translateY(2px); }
         .loading { text-align: center; font-style: italic; color: #5d2e0a; margin: 20px 0; }
+        h3 { color: #5d2e0a; font-size: 16px; margin-top: 20px; border-bottom: 1px solid #5d2e0a; padding-bottom: 5px; text-align: center; }
     </style>
 </head>
 <body>
@@ -59,23 +64,24 @@
         </div>
     </div>
 
-    <h1>Logboek</h1>
+    <h1>Het Logboek</h1>
 
     <div class="parchment-container">
-        <div class="your-score">
-            <h2>Team: <span id="displayTeamnaam">...</span></h2>
-            <div class="score-val" id="displayScore">0</div>
-            <div style="font-size: 12px; text-transform: uppercase;">Locaties bezocht</div>
+        <div class="your-stats">
+            <h2>Uw Team: <span id="displayTeamnaam">...</span></h2>
+            <h3>Uw eigen vorderingen:</h3>
+            <div id="bezochte-karakters-eigen" class="character-list-own">
+                U heeft nog geen enkel spoor gevonden...
+            </div>
         </div>
 
-        <h3>Bezochte locaties (andere teams):</h3>
-        <div id="loader" class="loading">Perkament wordt ontrold...</div>
+        <h3>Voortgang van andere onderzoekers:</h3>
+        <div id="loader" class="loading">Informatie wordt verzameld...</div>
         <table id="leaderboard" style="display:none;">
             <thead>
                 <tr>
-                    <th>Nr</th>
-                    <th>Team</th>
-                    <th>Score</th>
+                    <th class="team-col">Team</th>
+                    <th class="status-col">Heeft gesproken met:</th>
                 </tr>
             </thead>
             <tbody id="leaderboardBody"></tbody>
@@ -87,90 +93,76 @@
     </div>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbz-6eQ2FGJSzQbcxvhVXYZKhw_d8OZHCmCdcGn2w5SbSmUpC0ZgYJL0nSMUb8b7G_Me/exec';
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbx98_eE6oxpU2DRP1SNXh1BaSoYPxNZZ9kodeLoMY8JQas6ah9Ys6vU6hOFsMJKmSzA/exec';
         const teamnaam = localStorage.getItem('teamnaam') || "Onbekend";
         const ONTKNOPING_URL = 'ontknoping.html';
         let timerStarted = false;
 
         document.getElementById('displayTeamnaam').innerText = teamnaam;
 
-        // --- TIMER LOGICA ---
         function updateTimer(startIsoString) {
             if (!startIsoString) return;
             const endTime = new Date(startIsoString).getTime() + (120 * 60 * 1000);
             const now = new Date().getTime();
             const distance = endTime - now;
-
-            if (distance <= 0) {
-                window.location.href = ONTKNOPING_URL;
-                return;
-            }
-
+            if (distance <= 0) { window.location.href = ONTKNOPING_URL; return; }
             const hours = Math.floor(distance / (1000 * 60 * 60));
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-            document.getElementById("countdown").innerText = 
-                (hours > 0 ? hours + ":" : "") + 
-                (minutes < 10 ? "0" + minutes : minutes) + ":" + 
-                (seconds < 10 ? "0" + seconds : seconds);
-                
+            document.getElementById("countdown").innerText = (hours > 0 ? hours + ":" : "") + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
             if (distance < 600000) document.getElementById("timer-display").style.borderColor = "#ff4444";
         }
 
-        async function loadLeaderboard() {
+        async function loadLogboekData() {
             try {
-                // 1. Haal algemene team-status op voor de timer en win-check
+                // 1. Eigen logboek
+                const logRes = await fetch(`${scriptURL}?getLogboek=true&teamnaam=${encodeURIComponent(teamnaam)}`);
+                const logData = await logRes.json();
+                if (logData.karakters && logData.karakters.trim() !== "") {
+                    document.getElementById('bezochte-karakters-eigen').innerHTML = logData.karakters;
+                }
+
+                // 2. Status check
                 const statusRes = await fetch(`${scriptURL}?teamnaam=${encodeURIComponent(teamnaam)}`);
                 const statusData = await statusRes.json();
-
-                // Check op winst
-                if (statusData.allesVoltooid === true) {
-                    window.location.href = ONTKNOPING_URL;
-                    return;
-                }
-
-                // Start timer
+                if (statusData.allesVoltooid === true) { window.location.href = ONTKNOPING_URL; return; }
                 if (statusData.starttijd) {
                     updateTimer(statusData.starttijd);
-                    if (!timerStarted) {
-                        setInterval(() => updateTimer(statusData.starttijd), 1000);
-                        timerStarted = true;
-                    }
+                    if (!timerStarted) { setInterval(() => updateTimer(statusData.starttijd), 1000); timerStarted = true; }
                 }
 
-                // 2. Haal Ranglijst op
+                // 3. Overzicht andere teams
                 const response = await fetch(`${scriptURL}?getLeaderboard=true`);
                 const data = await response.json();
                 
                 const tbody = document.getElementById('leaderboardBody');
                 tbody.innerHTML = "";
 
-                const myData = data.find(row => row.team.toLowerCase() === teamnaam.toLowerCase());
-                if (myData) {
-                    document.getElementById('displayScore').innerText = myData.score;
-                }
-
-                data.forEach((entry, index) => {
+                data.forEach((entry) => {
+                    // Verberg je eigen team in de algemene lijst als je dat wilt, 
+                    // of laat het staan voor het overzicht.
                     const row = tbody.insertRow();
-                    if(index === 0) row.className = "rank-1";
+                    const cellTeam = row.insertCell(0);
+                    const cellStatus = row.insertCell(1);
                     
-                    row.insertCell(0).innerText = index + 1 + ".";
-                    row.insertCell(1).innerText = entry.team;
-                    row.insertCell(2).innerText = entry.score;
+                    cellTeam.className = "team-col";
+                    cellStatus.className = "status-col";
+                    
+                    cellTeam.innerText = entry.team;
+                    // Gebruik innerHTML zodat ook voor anderen de <br> en <em> werken
+                    cellStatus.innerHTML = entry.karakters;
                 });
 
                 document.getElementById('loader').style.display = 'none';
                 document.getElementById('leaderboard').style.display = 'table';
 
             } catch (e) {
-                document.getElementById('loader').innerText = "Kon het logboek niet raadplegen...";
+                document.getElementById('loader').innerText = "Het logboek is momenteel onleesbaar...";
             }
         }
 
-        loadLeaderboard();
-        // Ververs ranglijst elke 30 seconden
-        setInterval(loadLeaderboard, 30000);
+        loadLogboekData();
+        setInterval(loadLogboekData, 30000);
     </script>
 </body>
 </html>
