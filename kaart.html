@@ -57,6 +57,7 @@
 <div class="top-nav">
     <div class="btn-round" onclick="toggleStoryModal(true)">📖</div>
     <div class="btn-round" onclick="toggleInfoModal(true)">?</div>
+    <div class="btn-round" style="color: #ff4444; border-color: #ff4444;" onclick="toggleSolveModal(true)">!</div>
 </div>
 
 <div id="infoModal" class="modal">
@@ -72,6 +73,17 @@
         <h2>DE VLOEK VAN VOSSERWOUDE</h2>
         <p>Welkom rechercheurs. Vosserwoude is in rep en roer na een mysterieuze moord. Ondervraag de bewoners, verzamel aanwijzingen en ontmasker de dader voordat de tijd op is.</p>
         <button style="width:100%; background: #800020; color: white; padding: 15px; border-radius: 10px; font-weight: bold; border: 2px solid #555; cursor: pointer;" onclick="toggleStoryModal(false)">START HET ONDERZOEK</button>
+    </div>
+</div>
+
+<div id="solveModal" class="modal">
+    <div class="modal-content">
+        <h2>MYSTERIE OPLOSSEN?</h2>
+        <p style="text-align: center; font-weight: bold;">Door hierop te klikken gaan jullie door naar de oplossingspagina. Weten jullie zeker dat jullie dat willen?</p>
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px;">
+            <button style="width:100%; background: #333; color: white; padding: 15px; border-radius: 10px; border: 2px solid #555; cursor: pointer;" onclick="toggleSolveModal(false)">Annuleren en terug naar het spel</button>
+            <button style="width:100%; background: #800020; color: white; padding: 15px; border-radius: 10px; border: 2px solid #ff4444; cursor: pointer;" onclick="window.location.href='ontknoping.html'">Wij willen het mysterie oplossen</button>
+        </div>
     </div>
 </div>
 
@@ -95,6 +107,7 @@
         document.getElementById('storyModal').style.display = show ? 'block' : 'none'; 
         if (!show) localStorage.setItem('storyRead', 'true');
     }
+    function toggleSolveModal(show) { document.getElementById('solveModal').style.display = show ? 'block' : 'none'; }
 
     window.onload = function() { if (!localStorage.getItem('storyRead')) toggleStoryModal(true); };
 
