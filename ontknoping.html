@@ -49,7 +49,7 @@
         <div id="form-content">
             <label for="dader-select">Selecteer de schuldige:</label>
             <select id="dader-select">
-                <option value="">-- Kies een karakter --</option>
+                <option value="">-- Informatie ophalen... --</option>
             </select>
 
             <label for="redenatie">Onderbouwing (Waarom denken jullie dit?):</label>
@@ -65,29 +65,33 @@
     </div>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbzsx0qvmRh5vmXeXrO6cFmvQ4G4FM8t6FWxPdbFL2d6-XOtryWXLQqeTT9zXRXogv4S/exec';
+        // VERGEET NIET DEZE URL TE UPDATEN NA NIEUWE IMPLEMENTATIE
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbzLQ3ispOyHLWLaVgN1Cm4mr5pAWA0dyNNtZh2W6Od82-XDgidtOD3in9cM8EgvLJhB/exec';
         const teamnaam = localStorage.getItem('teamnaam');
 
         if (!teamnaam) window.location.href = 'index.html';
 
-        // Laad de karakters voor de dropdown
-async function loadCharacters() {
-    try {
-        const response = await fetch(`${scriptURL}?getKarakterLijst=true`);
-        const karakters = await response.json();
-        const select = document.getElementById('dader-select');
-        
-        karakters.forEach(k => {
-            let opt = document.createElement('option');
-            opt.value = k; // De volledige tekst incl. HTML gaat naar de sheet
-            // We laten de HTML zien in de dropdown, maar strippen deze voor de leesbaarheid van de tekst
-            opt.innerHTML = k.replace('<br>', ' - ').replace('<em>', '').replace('</em>', '');
-            select.appendChild(opt);
-        });
-    } catch (e) {
-        console.log("Fout bij laden karakters");
-    }
-}
+        async function loadCharacters() {
+            try {
+                const response = await fetch(`${scriptURL}?getKarakterLijst=true`);
+                const karakters = await response.json();
+                const select = document.getElementById('dader-select');
+                
+                select.innerHTML = '<option value="">-- Kies een karakter --</option>';
+                
+                karakters.forEach(k => {
+                    let opt = document.createElement('option');
+                    opt.value = k; 
+                    // Schone weergave voor de gebruiker:
+                    let cleanName = k.replace(/<br\s*\/?>/gi, ' - ').replace(/<\/?[^>]+(>|$)/g, "");
+                    opt.textContent = cleanName; 
+                    select.appendChild(opt);
+                });
+            } catch (e) {
+                console.error("Fout:", e);
+                document.getElementById('dader-select').innerHTML = '<option value="">Fout bij laden bewoners.</option>';
+            }
+        }
 
         async function submitSolution() {
             const dader = document.getElementById('dader-select').value;
@@ -99,7 +103,7 @@ async function loadCharacters() {
                 return;
             }
 
-            if (!confirm("Weten jullie het zeker? Na het indienen kan de oplossing niet meer worden gewijzigd.")) return;
+            if (!confirm("Weten jullie het zeker?")) return;
 
             btn.disabled = true;
             btn.innerText = "Bezig met verzenden...";
@@ -112,20 +116,18 @@ async function loadCharacters() {
             };
 
             try {
-                const response = await fetch(scriptURL, {
+                await fetch(scriptURL, {
                     method: 'POST',
-                    mode: 'no-cors', // Vanwege Google Script restricties
+                    mode: 'no-cors', 
                     cache: 'no-cache',
                     body: JSON.stringify(payload)
                 });
 
-                // Omdat we no-cors gebruiken kunnen we de response niet direct lezen, 
-                // maar we gaan uit van succes als er geen error is.
                 document.getElementById('form-content').style.display = 'none';
                 document.getElementById('success-msg').style.display = 'block';
                 
             } catch (e) {
-                alert("Er ging iets mis bij het verzenden. Probeer het opnieuw.");
+                alert("Er ging iets mis. Probeer het opnieuw.");
                 btn.disabled = false;
                 btn.innerText = "Oplossing Indienen";
             }
