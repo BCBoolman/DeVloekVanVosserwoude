@@ -1,1 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>De Ontknoping - Vosserwoude</title>
+    <style>
+        body { 
+            margin: 0; padding: 20px; font-family: 'Georgia', serif; 
+            background: #222 url('https://www.transparenttextures.com/patterns/parchment.png');
+            color: #333; min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+        }
 
+        .parchment-container {
+            background: #f4e4bc; padding: 25px; border-radius: 5px; border: 2px solid #5d2e0a;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.5); width: 100%; max-width: 500px; box-sizing: border-box;
+            background-image: url('https://www.transparenttextures.com/patterns/parchment.png');
+            margin-top: 30px;
+        }
+
+        h1 { color: #800020; text-transform: uppercase; letter-spacing: 2px; text-align: center; margin-bottom: 20px; }
+        h2 { color: #5d2e0a; font-size: 18px; text-align: center; border-bottom: 1px solid #5d2e0a; padding-bottom: 10px; }
+
+        label { display: block; margin-top: 20px; font-weight: bold; color: #5d2e0a; text-transform: uppercase; font-size: 13px; }
+
+        select, textarea {
+            width: 100%; padding: 12px; margin-top: 8px; border: 1px solid #5d2e0a; border-radius: 8px;
+            background: rgba(255,255,255,0.5); font-family: 'Georgia', serif; font-size: 16px; box-sizing: border-box;
+        }
+
+        textarea { height: 150px; resize: none; }
+
+        .submit-btn {
+            width: 100%; margin-top: 25px; padding: 18px; border: 2px solid #555; border-radius: 12px;
+            font-weight: bold; font-size: 16px; background: #800020; color: #fff; cursor: pointer;
+            text-transform: uppercase; font-family: 'Georgia', serif; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .submit-btn:disabled { background: #666; cursor: not-allowed; }
+
+        #success-msg { display: none; text-align: center; color: #1e8449; font-weight: bold; margin-top: 20px; padding: 15px; border: 2px dashed #1e8449; }
+    </style>
+</head>
+<body>
+
+    <div class="parchment-container">
+        <h1>De Ontknoping</h1>
+        <h2>Wie is de dader?</h2>
+        
+        <div id="form-content">
+            <label for="dader-select">Selecteer de schuldige:</label>
+            <select id="dader-select">
+                <option value="">-- Kies een karakter --</option>
+            </select>
+
+            <label for="redenatie">Onderbouwing (Waarom denken jullie dit?):</label>
+            <textarea id="redenatie" placeholder="Beschrijf jullie bewijslast en redenatie..."></textarea>
+
+            <button class="submit-btn" id="submitBtn" onclick="submitSolution()">Oplossing Indienen</button>
+        </div>
+
+        <div id="success-msg">
+            Uw conclusie is veilig opgeborgen in het archief. <br><br>
+            De spelleiding zal jullie redenatie beoordelen. Wacht op verdere instructies voor de definitieve uitslag!
+        </div>
+    </div>
+
+    <script>
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbx98_eE6oxpU2DRP1SNXh1BaSoYPxNZZ9kodeLoMY8JQas6ah9Ys6vU6hOFsMJKmSzA/exec';
+        const teamnaam = localStorage.getItem('teamnaam');
+
+        if (!teamnaam) window.location.href = 'index.html';
+
+        // Laad de karakters voor de dropdown
+async function loadCharacters() {
+    try {
+        const response = await fetch(`${scriptURL}?getKarakterLijst=true`);
+        const karakters = await response.json();
+        const select = document.getElementById('dader-select');
+        
+        karakters.forEach(k => {
+            let opt = document.createElement('option');
+            opt.value = k; // De volledige tekst incl. HTML gaat naar de sheet
+            // We laten de HTML zien in de dropdown, maar strippen deze voor de leesbaarheid van de tekst
+            opt.innerHTML = k.replace('<br>', ' - ').replace('<em>', '').replace('</em>', '');
+            select.appendChild(opt);
+        });
+    } catch (e) {
+        console.log("Fout bij laden karakters");
+    }
+}
+
+        async function submitSolution() {
+            const dader = document.getElementById('dader-select').value;
+            const redenatie = document.getElementById('redenatie').value;
+            const btn = document.getElementById('submitBtn');
+
+            if (!dader || !redenatie.trim()) {
+                alert("Vul alstublieft zowel de dader als de onderbouwing in.");
+                return;
+            }
+
+            if (!confirm("Weten jullie het zeker? Na het indienen kan de oplossing niet meer worden gewijzigd.")) return;
+
+            btn.disabled = true;
+            btn.innerText = "Bezig met verzenden...";
+
+            const payload = {
+                action: "submitSolution",
+                teamnaam: teamnaam,
+                dader: dader,
+                redenatie: redenatie
+            };
+
+            try {
+                const response = await fetch(scriptURL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Vanwege Google Script restricties
+                    cache: 'no-cache',
+                    body: JSON.stringify(payload)
+                });
+
+                // Omdat we no-cors gebruiken kunnen we de response niet direct lezen, 
+                // maar we gaan uit van succes als er geen error is.
+                document.getElementById('form-content').style.display = 'none';
+                document.getElementById('success-msg').style.display = 'block';
+                
+            } catch (e) {
+                alert("Er ging iets mis bij het verzenden. Probeer het opnieuw.");
+                btn.disabled = false;
+                btn.innerText = "Oplossing Indienen";
+            }
+        }
+
+        loadCharacters();
+    </script>
+</body>
+</html>
