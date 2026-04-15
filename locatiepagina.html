@@ -97,7 +97,7 @@
     let timerStarted = false;
 
     // Voeg dit toe bovenaan je script in kaart.html en logboek.html
-if (localStorage.getItem('spelKlaar_' + teamnaam) === 'true') {
+if (teamnaam && localStorage.getItem('spelKlaar_' + teamnaam) === 'true') {
     window.location.href = 'ontknoping.html';
 }   
 
