@@ -91,7 +91,7 @@
         if (!teamnaam) window.location.href = 'index.html';
 
         // Directe check of het team al klaar is (lokaal)
-        if (localStorage.getItem('spelKlaar') === 'true') {
+        if (localStorage.getItem('spelKlaar_' + teamnaam) === 'true') {
             showSuccess();
         } else {
             loadCharacters();
@@ -105,11 +105,11 @@
         async function loadCharacters() {
             try {
                 const response = await fetch(`${scriptURL}?getKarakterLijst=true&teamnaam=${encodeURIComponent(teamnaam)}`);
-                const karakters = await response.json();
+                const data = await response.json();
                 
                 // Server-side check of team al klaar is
-                if (karakters.isKlaar) {
-                    localStorage.setItem('spelKlaar', 'true');
+                if (data.isKlaar) {
+                    localStorage.setItem('spelKlaar_' + teamnaam, 'true');
                     showSuccess();
                     return;
                 }
@@ -161,7 +161,7 @@
                 });
 
                 // HET SIGNAAL: Sla lokaal op dat het spel klaar is
-                localStorage.setItem('spelKlaar', 'true');
+                localStorage.setItem('spelKlaar_' + teamnaam, 'true');
                 showSuccess();
                 
             } catch (e) {
