@@ -96,9 +96,14 @@
 </div>
 
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbzLQ3ispOyHLWLaVgN1Cm4mr5pAWA0dyNNtZh2W6Od82-XDgidtOD3in9cM8EgvLJhB/exec';
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbz-5zJfbk34RP5N8hjVu0_ASCLKSDa-hg8Q6ViNFFcwAfKrfZw5iJzfoij8mA9yITwM/exec';
     let teamnaam = localStorage.getItem('teamnaam');
     const ONTKNOPING_URL = 'ontknoping.html';
+
+    // Voeg dit toe bovenaan je script in kaart.html en logboek.html
+if (localStorage.getItem('spelKlaar') === 'true') {
+    window.location.href = 'ontknoping.html';
+}
 
     if (!teamnaam || teamnaam.trim() === "") { window.location.href = 'index.html'; }
 
