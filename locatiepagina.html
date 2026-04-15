@@ -80,7 +80,7 @@
 
     <div id="success-container">
         <h2>BEWIJS GELEVERD</h2>
-        <p>Je hebt de bewoner met succes ondervraagd. In je logboek noteer je:</p>
+        <p>Jullie hebben de bewoner met succes ondervraagd. Jullie zijn het volgende te weten gekomen:</p>
         <div class="hint-box">
             <p id="hint-tekst"></p>
         </div>
@@ -89,7 +89,10 @@
 </div>
 
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbzLQ3ispOyHLWLaVgN1Cm4mr5pAWA0dyNNtZh2W6Od82-XDgidtOD3in9cM8EgvLJhB/exec'; 
+    if (localStorage.getItem('spelKlaar') === 'true') {
+    window.location.href = 'ontknoping.html';
+}
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbz-5zJfbk34RP5N8hjVu0_ASCLKSDa-hg8Q6ViNFFcwAfKrfZw5iJzfoij8mA9yITwM/exec'; 
     const locatieId = sessionStorage.getItem('locationName');
     const teamnaam = localStorage.getItem('teamnaam');
     const ONTKNOPING_URL = 'ontknoping.html';
