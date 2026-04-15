@@ -89,15 +89,17 @@
 </div>
 
 <script>
-    if (localStorage.getItem('spelKlaar') === 'true') {
-    window.location.href = 'ontknoping.html';
-}
     const scriptURL = 'https://script.google.com/macros/s/AKfycbz-5zJfbk34RP5N8hjVu0_ASCLKSDa-hg8Q6ViNFFcwAfKrfZw5iJzfoij8mA9yITwM/exec'; 
     const locatieId = sessionStorage.getItem('locationName');
     const teamnaam = localStorage.getItem('teamnaam');
     const ONTKNOPING_URL = 'ontknoping.html';
 
     let timerStarted = false;
+
+    // Voeg dit toe bovenaan je script in kaart.html en logboek.html
+if (localStorage.getItem('spelKlaar') === 'true') {
+    window.location.href = 'ontknoping.html';
+}   
 
     // --- TIMER LOGICA ---
     function updateTimer(startIsoString) {
