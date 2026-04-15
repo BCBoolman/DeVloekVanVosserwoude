@@ -123,6 +123,10 @@
 
         document.getElementById('displayTeamnaam').innerText = teamnaam;
 
+        // Voeg dit toe bovenaan je script in kaart.html en logboek.html
+if (localStorage.getItem('spelKlaar') === 'true') {
+    window.location.href = 'ontknoping.html';
+}
         function formatLogEntry(tekst) {
             if (!tekst || tekst.trim() === "" || tekst.includes("Nog geen")) {
                 return "Nog geen bewoners gesproken";
