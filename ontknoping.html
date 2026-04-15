@@ -29,24 +29,35 @@
 
         textarea { height: 150px; resize: none; }
 
-        .submit-btn {
+        .submit-btn, .action-btn {
             width: 100%; margin-top: 25px; padding: 18px; border: 2px solid #555; border-radius: 12px;
-            font-weight: bold; font-size: 16px; background: #800020; color: #fff; cursor: pointer;
+            font-weight: bold; font-size: 16px; cursor: pointer;
             text-transform: uppercase; font-family: 'Georgia', serif; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            text-decoration: none; display: inline-block; text-align: center; box-sizing: border-box;
         }
 
+        .submit-btn { background: #800020; color: #fff; }
         .submit-btn:disabled { background: #666; cursor: not-allowed; }
 
-        #success-msg { display: none; text-align: center; color: #1e8449; font-weight: bold; margin-top: 20px; padding: 15px; border: 2px dashed #1e8449; }
+        /* Stijl voor de nieuwe knoppen onderaan */
+        .pdf-btn { background: #5d2e0a; color: #f4e4bc; border-color: #3d1e06; margin-top: 30px; }
+        .back-btn { background: #666; color: #fff; border-color: #444; margin-top: 15px; font-size: 14px; padding: 12px; }
+
+        #success-msg { 
+            display: none; text-align: center; color: #5d2e0a; font-weight: bold; 
+            margin-top: 20px; padding: 15px; border: 2px dashed #800020; 
+        }
+
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
     <div class="parchment-container">
         <h1>De Ontknoping</h1>
-        <h2>Wie is de dader?</h2>
         
         <div id="form-content">
+            <h2>Wie is de dader?</h2>
             <label for="dader-select">Selecteer de schuldige:</label>
             <select id="dader-select">
                 <option value="">-- Informatie ophalen... --</option>
@@ -59,30 +70,56 @@
         </div>
 
         <div id="success-msg">
-            Uw conclusie is veilig opgeborgen in het archief. <br><br>
-            De spelleiding zal jullie redenatie beoordelen. Wacht op verdere instructies voor de definitieve uitslag!
+            <p>Jullie conclusie is veilig opgeborgen in het archief. Het mysterie is voor jullie team afgesloten.</p>
+            <p>De spelleiding zal jullie redenatie beoordelen, na deze beoordeling volgt de beoordeling op het openbare scoreboard. Download hieronder het sluitstuk van het verhaal, de wachtwoord van dit bestand is DVVV+300526:</p>
+            
+            <a href="https://drive.google.com/uc?export=download&id=1gYXSaLbiMDoeOOEwaXBhnkFa95HNRbvU" download class="action-btn pdf-btn">
+                📜 Download Ontknoping (PDF)
+            </a>
+
+            <a href="index.html" class="action-btn back-btn">
+                Terug naar Startpagina
+            </a>
         </div>
     </div>
 
     <script>
-        // VERGEET NIET DEZE URL TE UPDATEN NA NIEUWE IMPLEMENTATIE
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbzLQ3ispOyHLWLaVgN1Cm4mr5pAWA0dyNNtZh2W6Od82-XDgidtOD3in9cM8EgvLJhB/exec';
+        // UPDATE DEZE URL NAAR JE NIEUWE IMPLEMENTATIE
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbz-5zJfbk34RP5N8hjVu0_ASCLKSDa-hg8Q6ViNFFcwAfKrfZw5iJzfoij8mA9yITwM/exec';
         const teamnaam = localStorage.getItem('teamnaam');
 
         if (!teamnaam) window.location.href = 'index.html';
 
+        // Directe check of het team al klaar is (lokaal)
+        if (localStorage.getItem('spelKlaar') === 'true') {
+            showSuccess();
+        } else {
+            loadCharacters();
+        }
+
+        function showSuccess() {
+            document.getElementById('form-content').classList.add('hidden');
+            document.getElementById('success-msg').style.display = 'block';
+        }
+
         async function loadCharacters() {
             try {
-                const response = await fetch(`${scriptURL}?getKarakterLijst=true`);
+                const response = await fetch(`${scriptURL}?getKarakterLijst=true&teamnaam=${encodeURIComponent(teamnaam)}`);
                 const karakters = await response.json();
-                const select = document.getElementById('dader-select');
                 
+                // Server-side check of team al klaar is
+                if (karakters.isKlaar) {
+                    localStorage.setItem('spelKlaar', 'true');
+                    showSuccess();
+                    return;
+                }
+
+                const select = document.getElementById('dader-select');
                 select.innerHTML = '<option value="">-- Kies een karakter --</option>';
                 
                 karakters.forEach(k => {
                     let opt = document.createElement('option');
                     opt.value = k; 
-                    // Schone weergave voor de gebruiker:
                     let cleanName = k.replace(/<br\s*\/?>/gi, ' - ').replace(/<\/?[^>]+(>|$)/g, "");
                     opt.textContent = cleanName; 
                     select.appendChild(opt);
@@ -103,7 +140,7 @@
                 return;
             }
 
-            if (!confirm("Weten jullie het zeker?")) return;
+            if (!confirm("Weten jullie het zeker? Na indienen kunnen jullie de kaart en het logboek niet meer gebruiken.")) return;
 
             btn.disabled = true;
             btn.innerText = "Bezig met verzenden...";
@@ -123,17 +160,16 @@
                     body: JSON.stringify(payload)
                 });
 
-                document.getElementById('form-content').style.display = 'none';
-                document.getElementById('success-msg').style.display = 'block';
+                // HET SIGNAAL: Sla lokaal op dat het spel klaar is
+                localStorage.setItem('spelKlaar', 'true');
+                showSuccess();
                 
             } catch (e) {
-                alert("Er ging iets mis. Probeer het opnieuw.");
+                alert("Er ging iets mis bij het verzenden. Probeer het opnieuw.");
                 btn.disabled = false;
                 btn.innerText = "Oplossing Indienen";
             }
         }
-
-        loadCharacters();
     </script>
 </body>
 </html>
