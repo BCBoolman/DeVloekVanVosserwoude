@@ -68,14 +68,17 @@
             cursor: pointer;
             font-family: 'Georgia', serif;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            margin-bottom: 15px;
+            margin-bottom: 12px; /* Iets verkleind voor ruimte */
             transition: 0.2s;
             display: block;
             box-sizing: border-box;
+            text-decoration: none; /* Voor het geval het een <a> wordt */
         }
 
         .start-btn { background: #800020; color: white; }
         .uitleg-btn { background: #000; color: #fff; }
+        .score-btn { background: #444; color: #fff; } /* Nieuwe stijl voor scoreboard */
+
         .btn-large:active { transform: translateY(2px); filter: brightness(1.2); }
         .start-btn:disabled { background: #444; color: #888; cursor: not-allowed; }
         .game-icon { width: 60px; height: auto; margin-bottom: 10px; }
@@ -103,18 +106,19 @@
 <div class="login-card">
     <img src="images/placeholder.jpg" alt="Icoon" class="game-icon">
     <h1>DE VLOEK VAN VOSSERWOUDE</h1>
-    <p class="main-p">Voer jullie teamnaam in. Gebruik op elke telefoon die wordt gebruikt binnen het team exact dezelfde naam!</p>
+    <p class="main-p">Voer jullie teamnaam in en start het mysterie! Gebruik op elke telefoon die wordt gebruikt binnen het team precies dezelfde naam. Vergeet niet om de speluitleg te lezen voordat je van start gaat, of neem even een kijkje op het scorebord om te zien hoe andere teams zijn geëindigd.</p>
     
     <input type="text" id="teamInput" placeholder="TEAMNAAM..." autocomplete="off">
     
     <button class="btn-large start-btn" id="startBtn" onclick="startSpel()">START DE VOSSENJACHT</button>
     <button class="btn-large uitleg-btn" onclick="toggleModal(true)">HOE WERKT HET SPEL?</button>
+    <button class="btn-large score-btn" onclick="window.location.href='scoreboard.html'">BEKIJK HET SCOREBORD</button>
 </div>
 
 <div id="uitlegModal" class="modal">
     <div class="modal-content">
         <h2>SPELUITLEG</h2>
-        <p>Welkom in dit Levend Cluedo / Vossenjacht spel! Jullie gaan aan de slag om het mysterie van Vosserwoude op te lossen. Gebruik de kaart en de GPS om bewoners te vinden en raadsels op te lossen.</p>
+        <p></p>
         <button class="btn-large start-btn" style="width:100%; margin-bottom: 0;" onclick="toggleModal(false)">BEGREPEN</button>
     </div>
 </div>
@@ -137,7 +141,7 @@
         }
 
         if (!uitlegBekeken) {
-            const bevestigen = confirm("Jullie hebben niet gekeken hoe het spel werkt, weten jullie zeker dat jullie willen starten?");
+            const bevestigen = confirm("Jullie hebben de uitleg niet bekeken. Weten jullie zeker dat jullie willen starten?");
             if (!bevestigen) return;
         }
 
@@ -149,31 +153,25 @@
         const scriptURL = "https://script.google.com/macros/s/AKfycbz-5zJfbk34RP5N8hjVu0_ASCLKSDa-hg8Q6ViNFFcwAfKrfZw5iJzfoij8mA9yITwM/exec";
         
         try {
-            // 1. Eerst controleren we de status van het team
             const response = await fetch(`${scriptURL}?teamnaam=${encodeURIComponent(genormaliseerdeNaam)}`);
             const data = await response.json();
 
-            // 2. Blokkeren indien voltooid
-            if (data.allesVoltooid === true) {
-                alert("Dit team heeft het mysterie van Vosserwoude al opgelost! De toegang tot de kaart is gesloten.");
+            // Check of het team al klaar is (team-specifieke vlag)
+            if (data.isKlaar === true || localStorage.getItem('spelKlaar_' + genormaliseerdeNaam) === 'true') {
+                alert("Dit team heeft het mysterie al opgelost!");
                 startBtn.innerText = origineleTekst;
                 startBtn.disabled = false;
                 return; 
             }
 
-            // 3. Registreer starttijd en WACHT op bevestiging
-            // Dit zorgt ervoor dat de rij in Google Sheets wordt aangemaakt voordat we doorgaan
             const registerRes = await fetch(`${scriptURL}?action=registerStart&teamnaam=${encodeURIComponent(genormaliseerdeNaam)}`);
-            const registerText = await registerRes.text();
-            console.log("Registratie status:", registerText);
+            await registerRes.text();
 
-            // 4. Opslaan en doorsturen
             localStorage.setItem('teamnaam', genormaliseerdeNaam);
             window.location.href = 'kaart.html';
 
         } catch (e) {
-            console.error("Er ging iets mis:", e);
-            // Fail-safe: als de server traag is, proberen we het na 2 seconden alsnog door te zetten
+            console.error("Fout:", e);
             localStorage.setItem('teamnaam', genormaliseerdeNaam);
             window.location.href = 'kaart.html';
         }
