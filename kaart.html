@@ -232,7 +232,7 @@ if (teamnaam && localStorage.getItem('spelKlaar_' + teamnaam) === 'true') {
 
     function checkCheckpoint() {
         if (!userLat) return alert("Start eerst GPS!");
-        const currentArea = areas.find(a => map.distance([userLat, userLon], [a.targetLat, a.targetLon]) <= 35);
+        const currentArea = areas.find(a => map.distance([userLat, userLon], [a.targetLat, a.targetLon]) <= 17);
         if (currentArea) {
             if (polygonLayers[currentArea.name].options.color === '#27ae60') alert("Deze aanwijzing heb je al in je logboek!");
             else { sessionStorage.setItem('locationName', currentArea.name); window.location.href = 'locatiepagina.html'; }
