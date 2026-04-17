@@ -121,7 +121,7 @@ if (teamnaam && localStorage.getItem('spelKlaar_' + teamnaam) === 'true') {
 
     window.onload = function() { if (!localStorage.getItem('storyRead')) toggleStoryModal(true); };
 
-    var map = L.map('map', { zoomControl: false }).setView([52.159035, 4.4925], 13);
+    var map = L.map('map', { zoomControl: false }).setView([52.159035, 4.4925], 7);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
     let areas = [];
