@@ -71,7 +71,12 @@
 <div id="storyModal" class="modal">
     <div class="modal-content">
         <h2>DE VLOEK VAN VOSSERWOUDE</h2>
-        <p>Welkom rechercheurs. Vosserwoude is in rep en roer na een mysterieuze moord. Ondervraag de bewoners, verzamel aanwijzingen en ontmasker de dader voordat de tijd op is.</p>
+        <p><strong>Welkom rechercheurs.</strong><br><br>Een jaar na de nachten van pure terreur, waarin de laatste weerwolven van Wakkerdam werden uitgeroeid, besloot een groep overlevenden het vervloekte dorp achter zich te laten. Ze hoopten hun trauma te begraven en een nieuw leven op te bouwen in Vosserwoude. Ze hadden hun lesje wel geleerd: dit nieuwe dorp lag niet langer geïsoleerd en overgeleverd aan de grillen van het bovennatuurlijke, maar juist aan de rand van een bos langs een drukbezochte handelsweg.<br><br>
+De nieuwe locatie bleek een schot in de roos. Reizigers bleven maar wat graag hangen in Vosserwoude; de lokale herberg draaide overuren en de sfeer was levendig. De oud-inwoners van Wakkerdam zouden bijna vergeten dat mensen niet het enige volk zijn dat deze magische wereld bevolkt… tot die ene dag.<br><br>
+Zonder waarschuwing werd de toegangsweg afgezet. Soldaten gingen de deuren langs, op zoek naar antwoorden op vragen die niemand durfde te stellen. Al snel verspreidden de geruchten zich als een lopend vuurtje. Iets verderop langs de weg, verscholen achter het struikgewas, was een lijk gevonden. <br><br>
+In een wereld waar magie de lucht vult, kijkt niemand meer op van een lijk. De bossen rond Wakkerdam lagen immers vol met de resten van hen die de wilde beesten hadden onderschat. Maar de vondst in Vosserwoude was op een andere manier verontrustend; niet aangevreten maar verrassend net achtergelaten. Op de plek waar de fatale slag was toegebracht, vertoonde de huid een afwijking die daar niet hoorde; een detail dat te doelgericht leek voor een toevallige worsteling. Was de moordenaar simpelweg slordig geweest, of was dit de eerste subtiele groet van een sluimerend gevaar?<br><br>
+<strong>Aan jullie de taak om deze moord te ontrafelen. Ondervraag de bewoners van Vosserwoude en ontdek de duistere waarheid. Wie is de moordenaar onder ons?</strong>
+</p>
         <button style="width:100%; background: #800020; color: white; padding: 15px; border-radius: 10px; font-weight: bold; border: 2px solid #555; cursor: pointer;" onclick="toggleStoryModal(false)">START HET ONDERZOEK</button>
     </div>
 </div>
@@ -116,7 +121,7 @@ if (teamnaam && localStorage.getItem('spelKlaar_' + teamnaam) === 'true') {
 
     window.onload = function() { if (!localStorage.getItem('storyRead')) toggleStoryModal(true); };
 
-    var map = L.map('map', { zoomControl: false }).setView([52.1678, 4.5338], 15);
+    var map = L.map('map', { zoomControl: false }).setView([52.159035, 4.4925], 15);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
     let areas = [];
