@@ -1,1 +1,111 @@
-//
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eindklassement - Vosserwoude</title>
+    <style>
+        body { 
+            margin: 0; padding: 20px; font-family: 'Georgia', serif; 
+            background: #222 url('https://www.transparenttextures.com/patterns/parchment.png');
+            color: #333; min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+        }
+
+        .container {
+            background: #f4e4bc; padding: 25px; border-radius: 5px; border: 2px solid #5d2e0a;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.5); width: 100%; max-width: 600px; box-sizing: border-box;
+            background-image: url('https://www.transparenttextures.com/patterns/parchment.png');
+        }
+
+        h1 { color: #800020; text-transform: uppercase; text-align: center; margin-bottom: 10px; font-size: 24px; }
+        .uitleg { border-bottom: 2px solid #5d2e0a; padding-bottom: 15px; margin-bottom: 20px; font-style: italic; font-size: 14px; line-height: 1.4; }
+
+        .team-card {
+            background: rgba(255, 255, 255, 0.4); border: 1px solid #5d2e0a; border-radius: 8px;
+            padding: 15px; margin-bottom: 15px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .team-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(93, 46, 10, 0.3); padding-bottom: 5px; margin-bottom: 10px; }
+        .team-name { font-weight: bold; color: #800020; font-size: 18px; }
+        .final-grade { background: #800020; color: white; padding: 5px 10px; border-radius: 5px; font-size: 20px; font-weight: bold; }
+
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px; }
+        .stat-label { color: #5d2e0a; font-weight: bold; }
+        .stat-value { text-align: right; }
+
+        .btn-back {
+            display: block; width: 100%; max-width: 200px; margin: 20px auto; padding: 15px;
+            background: #333; color: white; text-align: center; text-decoration: none;
+            border-radius: 8px; font-weight: bold; text-transform: uppercase; font-size: 14px;
+        }
+
+        .loading { text-align: center; font-style: italic; color: #5d2e0a; }
+        .empty { text-align: center; padding: 20px; color: #800020; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Eindklassement</h1>
+    
+    <div class="uitleg">
+        <strong>Berekening eindcijfer:</strong><br>
+        (Bezochte locaties + 4pt voor juiste dader + max 6pt voor onderbouwing) gedeeld door 2. 
+        Alleen teams die door de spelleiding zijn beoordeeld verschijnen in deze lijst.
+    </div>
+
+    <div id="scoreboard-content">
+        <p class="loading">Informatie uit het archief ophalen...</p>
+    </div>
+
+    <a href="index.html" class="btn-back">Terug naar Start</a>
+</div>
+
+<script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbzLT8fJk1yeGHRxEmRqkXwSO-IdxssnBUZIKrAIrxf1YMyQN-gF5iGOS1zjrEz-cZgx/exec'; // VERVANG DEZE DOOR JE EIGEN URL
+
+    async function loadScoreboard() {
+        try {
+            const response = await fetch(`${scriptURL}?getScoreboard=true`);
+            const data = await response.json();
+            const content = document.getElementById('scoreboard-content');
+
+            if (data.length === 0) {
+                content.innerHTML = '<p class="empty">Er zijn nog geen teams beoordeeld door de spelleiding.</p>';
+                return;
+            }
+
+            content.innerHTML = '';
+            data.forEach(item => {
+                const card = `
+                    <div class="team-card">
+                        <div class="team-header">
+                            <span class="team-name">${item.team}</span>
+                            <span class="final-grade">${item.eindCijfer}</span>
+                        </div>
+                        <div class="stats-grid">
+                            <span class="stat-label">Bezochte locaties:</span>
+                            <span class="stat-value">${item.locaties}</span>
+                            
+                            <span class="stat-label">Goede verdachte:</span>
+                            <span class="stat-value">${item.daderGoed ? '✅ Ja' : '❌ Nee'}</span>
+                            
+                            <span class="stat-label">Cijfer onderbouwing:</span>
+                            <span class="stat-value">${item.redenatieCijfer} / 6</span>
+                        </div>
+                    </div>
+                `;
+                content.innerHTML += card;
+            });
+
+        } catch (e) {
+            console.error(e);
+            document.getElementById('scoreboard-content').innerHTML = '<p class="empty">Fout bij laden van gegevens.</p>';
+        }
+    }
+
+    window.onload = loadScoreboard;
+</script>
+
+</body>
+</html>
