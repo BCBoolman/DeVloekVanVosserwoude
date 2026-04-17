@@ -68,16 +68,16 @@
             cursor: pointer;
             font-family: 'Georgia', serif;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            margin-bottom: 12px; /* Iets verkleind voor ruimte */
+            margin-bottom: 12px;
             transition: 0.2s;
             display: block;
             box-sizing: border-box;
-            text-decoration: none; /* Voor het geval het een <a> wordt */
+            text-decoration: none;
         }
 
         .start-btn { background: #800020; color: white; }
         .uitleg-btn { background: #000; color: #fff; }
-        .score-btn { background: #444; color: #fff; } /* Nieuwe stijl voor scoreboard */
+        .score-btn { background: #444; color: #fff; }
 
         .btn-large:active { transform: translateY(2px); filter: brightness(1.2); }
         .start-btn:disabled { background: #444; color: #888; cursor: not-allowed; }
@@ -90,13 +90,27 @@
         }
         
         .modal-content { 
-            background-color: #f4e4bc; margin: 20% auto; padding: 25px; 
-            border-radius: 15px; width: 85%; max-width: 350px; 
-            border: 3px double #5d2e0a; text-align: center; 
+            background-color: #f4e4bc; 
+            margin: 10vh auto; /* Aangepast voor betere plaatsing */
+            padding: 25px; 
+            border-radius: 15px; 
+            width: 85%; 
+            max-width: 350px; 
+            border: 3px double #5d2e0a; 
+            text-align: center; 
+            max-height: 80vh; /* Maximaal 80% van de schermhoogte */
+            overflow-y: auto; /* Voegt verticale scrollbar toe indien nodig */
+            box-sizing: border-box; /* Zorgt dat padding de hoogte niet breekt */
         }
 
         .modal-content h2 { color: #800020; margin-top: 0; font-size: 18px; }
-        .modal-content p { color: #5d2e0a !important; font-size: 15px !important; line-height: 1.5; margin-bottom: 20px; }
+        .modal-content p { 
+            color: #5d2e0a !important; 
+            font-size: 15px !important; 
+            line-height: 1.5; 
+            margin-bottom: 20px; 
+            text-align: left; /* Tekst links uitgelijnd voor betere leesbaarheid */
+        }
     </style>
 </head>
 <body>
@@ -117,8 +131,8 @@
 
 <div id="uitlegModal" class="modal">
     <div class="modal-content">
-        <h2>SPELUITLEG</h2>
-<p>Welkom in dit Levend Cluedo / Vossenjacht spel! <br><br>Nadat jullie ingelogd zijn krijgen jullie eerst het introductie verhaal te zien. Na deze gelezen te hebben komen jullie op de kaart van het speelgebied, wat is opgedeeld in een aantal kleinere gebieden waar jullie bewoners kunnen 'vinden' die jullie kunnen ondervragen. Deze kaart kan bewogen worden, er kan ingezoomd worden en jullie kunnen de eigen locatie zien door op de 'GPS'knop te drukken. Door op een van de kleinere gebieden te klikken krijgen jullie een raadsel voor de exacte locatie van deze bewoner. Loop naar deze locatie en klik dan op de 'Check' knop.<br><br> Eenmaal op de juiste locatie zullen jullie eerst een vraag over deze locatie moeten beantwoorden. Klopt het antwoord niet, dan zullen jullie eerst naar een andere locatie moeten en kunnen jullie 10 minuten niet hier terug komen. Klopt het antwoord wel, dan krijgen jullie de monoloog van de bewoner.<br><br> Als jullie eenmaal terug zijn op het hoofdscherm heeft een succesvol voltooide locatie een groen kleur gekregen, en kunnen jullie de monoloog nogmaals zien door op deze locatie te klikken. Naast deze manier om de voortgang bij te houden, kunnen jullie ook op het ‘Logboek’ klikken om te zien welke bewoners jullie al langs zijn geweest, en waar andere teams zijn geweest.<br><br>Mochten jullie het introductie verhaal nogmaals willen vergelijken met jullie notities, klik dan op de knop met het boekje rechtsboven. Voor een beknopte speluitleg klik op de knop met het vraagteken ernaast. Denken jullie het te weten? Klik dan op de knop met het uitroepteken. Hiermee komen jullie op de pagina voor de ontknoping. Het spel stuurt jullie ook automatisch naar deze pagina na de 2 uur speeltijd, of als jullie alle gebieden langs zijn geweest.<br><br> Na het spelen van het spel komen jullie weer terug op de startpagina. Als de spelleiding jullie antwoord op het mysterie heeft beoordeeld, komt jullie team automatisch in het scorebord te staan. De eindscore wordt berekend aan de hand van de volgende som: (locaties bezocht + 4 punten voor juiste dader + beoordeling onderbouweing (0 tot 6 punten))/2. De start locatie heeft ook een raadsel, vraag en belangrijke start informatie die jullie kunnen verzamelen, maar hier kan geen punt mee worden verdiend.<br><br>Komen jullie achter de waarheid van het mysterie? En gaat het jullie lukken om beter te scoren dan de andere teams? Veel succes met de Vloek van Vosserwoude!</p>
+        <h2 style="text-align: center;">SPELUITLEG</h2>
+        <p>Welkom in dit Levend Cluedo / Vossenjacht spel! <br><br>Nadat jullie ingelogd zijn krijgen jullie eerst het introductie verhaal te zien. Na deze gelezen te hebben komen jullie op de kaart van het speelgebied, wat is opgedeeld in een aantal kleinere gebieden waar jullie bewoners kunnen 'vinden' die jullie kunnen ondervragen. Deze kaart kan bewogen worden, er kan ingezoomd worden en jullie kunnen de eigen locatie zien door op de 'GPS'knop te drukken. Door op een van de kleinere gebieden te klikken krijgen jullie een raadsel voor de exacte locatie van deze bewoner. Loop naar deze locatie en klik dan op de 'Check' knop.<br><br> Eenmaal op de juiste locatie zullen jullie eerst een vraag over deze locatie moeten beantwoorden. Klopt het antwoord niet, dan zullen jullie eerst naar een andere locatie moeten en kunnen jullie 10 minuten niet hier terug komen. Klopt het antwoord wel, dan krijgen jullie de monoloog van de bewoner.<br><br> Als jullie eenmaal terug zijn op het hoofdscherm heeft een succesvol voltooide locatie een groen kleur gekregen, en kunnen jullie de monoloog nogmaals zien door op deze locatie te klikken. Naast deze manier om de voortgang bij te houden, kunnen jullie ook op het ‘Logboek’ klikken om te zien welke bewoners jullie al langs zijn geweest, en waar andere teams zijn geweest.<br><br>Mochten jullie het introductie verhaal nogmaals willen vergelijken met jullie notities, klik dan op de knop met het boekje rechtsboven. Voor een beknopte speluitleg klik op de knop met het vraagteken ernaast. Denken jullie het te weten? Klik dan op de knop met het uitroepteken. Hiermee komen jullie op de pagina voor de ontknoping. Het spel stuurt jullie ook automatisch naar deze pagina na de 2 uur speeltijd, of als jullie alle gebieden langs zijn geweest.<br><br> Na het spelen van het spel komen jullie weer terug op de startpagina. Als de spelleiding jullie antwoord op het mysterie heeft beoordeeld, komt jullie team automatisch in het scorebord te staan. De eindscore wordt berekend aan de hand van de volgende som: (locaties bezocht + 4 punten voor juiste dader + beoordeling onderbouweing (0 tot 6 punten))/2. De start locatie heeft ook een raadsel, vraag en belangrijke start informatie die jullie kunnen verzamelen, maar hier kan geen punt mee worden verdiend.<br><br>Komen jullie achter de waarheid van het mysterie? En gaat het jullie lukken om beter te scoren dan de andere teams? Veel succes met de Vloek van Vosserwoude!</p>
         <button class="btn-large start-btn" style="width:100%; margin-bottom: 0;" onclick="toggleModal(false)">BEGREPEN</button>
     </div>
 </div>
